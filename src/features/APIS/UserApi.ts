@@ -1,139 +1,98 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+const baseQuery = fetchBaseQuery({
+  // Pointing to your production Render URL
+  baseUrl: 'https://online-voting-system-oq4p.onrender.com/api/',
+  prepareHeaders: (headers) => {
+    const token = localStorage.getItem('token'); 
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
 export const userApi = createApi({
   reducerPath: 'userApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'https://ticket-backend-xv5a.onrender.com/api/' }),
+  baseQuery: baseQuery,
   tagTypes: ['users', 'user'],
   endpoints: (builder) => ({
-    // 🟢 Auth: Login
-    loginUser: builder.mutation({
-      query: (userLoginCredentials) => ({
-        url: 'auth/login',
-        method: 'POST',
-        body: userLoginCredentials,
-      }),
-    }),
-
-    // 🟢 Auth: Register
-    registerUser: builder.mutation({
-      query: (userRegisterPayload) => ({
-        url: 'auth/register',
-        method: 'POST',
-        body: userRegisterPayload,
-      }),
-    }),
-
-    // ✉️ Auth: Request password reset
-    requestPasswordReset: builder.mutation({
-      query: (emailPayload) => ({
-        url: 'auth/password-reset',
-        method: 'POST',
-        body: emailPayload, // { email: "user@example.com" }
-      }),
-    }),
-
-    // 🔐 Auth: Reset password with token
-    resetPassword: builder.mutation({
-      query: ({ token, newPasswordPayload }) => ({
-        url: `auth/reset/${token}`,
-        method: 'PUT',
-        body: newPasswordPayload, // { password: "newPassword123" }
-      }),
-    }),
-
-    // ✅ Auth: Verify email
-    verifyEmail: builder.mutation({
-      query: (verificationPayload) => ({
-        url: 'auth/verify-email',
-        method: 'PUT',
-        body: verificationPayload, // { token: "..." } or your defined payload
-      }),
-    }),
-
-    // 📋 Get all users
-    getAllUsersProfiles: builder.query({
-      query: () => 'users',
+    // GET ALL USERS - Matches GET /api/users/
+    getAllUsers: builder.query<any, void>({
+      query: () => 'users/', 
       providesTags: ['users'],
     }),
 
-    // 🔍 Get user by National ID
-    getUserByNationalId: builder.query({
-      query: (nationalId: number | string) => `users/${nationalId}`,
+    // GET USER BY ID - Matches GET /api/users/by-id/{{userId}}
+    getUserById: builder.query<any, string>({
+      query: (userId) => `users/by-id/${userId}`,
       providesTags: ['user'],
     }),
 
-    // 🔍 Get full user details
-    getUserDetails: builder.query({
-      query: (nationalId: number | string) => `users/${nationalId}/details`,
+    // GET USER BY REG NO - Matches GET /api/users/by-reg-no?reg_no=...
+    getUserByRegNo: builder.query<any, string>({
+      query: (reg_no) => `users/by-reg-no?reg_no=${encodeURIComponent(reg_no)}`,
       providesTags: ['user'],
     }),
 
-    // 🔁 Update user by National ID (standard user update)
-    updateUser: builder.mutation({
-      query: ({ nationalId, ...patch }) => ({
-        url: `users/${nationalId}`,
+    // GET USER BY LAST NAME - Matches GET /api/users/by-last-name?lastName=...
+    getUserByLastName: builder.query<any, string>({
+      query: (lastName) => `users/by-last-name?lastName=${encodeURIComponent(lastName)}`,
+      providesTags: ['user'],
+    }),
+
+    // GET USER BY EMAIL - Matches GET /api/users/by-email?email=...
+    getUserByEmail: builder.query<any, string>({
+      query: (email) => `users/by-email?email=${encodeURIComponent(email)}`,
+      providesTags: ['user'],
+    }),
+
+    // GET USERS BY SCHOOL - Matches GET /api/users/by-school?school=...
+    getUsersBySchool: builder.query<any, string>({
+      query: (school) => `users/by-school?school=${encodeURIComponent(school)}`,
+      providesTags: ['users'],
+    }),
+
+    // GET TOTAL COUNT - Matches GET /api/users/count
+    getUsersCount: builder.query<any, void>({
+      query: () => 'users/count',
+    }),
+
+    // GET COUNT BY SCHOOL - Matches GET /api/users/count-by-school?school=...
+    getUsersCountBySchool: builder.query<any, string>({
+      query: (school) => `users/count-by-school?school=${encodeURIComponent(school)}`,
+    }),
+
+    // UPDATE USER - Matches PUT /api/users/update/{{userId}}
+    updateUser: builder.mutation<any, { userId: string; [key: string]: any }>({
+      query: ({ userId, ...patch }) => ({
+        url: `users/update/${userId}`,
         method: 'PUT',
         body: patch,
       }),
       invalidatesTags: ['user', 'users'],
     }),
 
-    // 🔁 Admin: Update user by National ID (can update roles, etc.)
-    updateAdminUser: builder.mutation({
-      query: ({ nationalId, ...adminUpdatePayload }) => ({
-        url: `admin/users/${nationalId}`,
-        method: 'PUT',
-        body: adminUpdatePayload,
-      }),
-      invalidatesTags: ['user', 'users'],
-    }),
-
-    // 🖼️ Update only profile image
-    updateUserProfileImage: builder.mutation({
-      query: ({ nationalId, profile_picture }) => ({
-        url: `users/${nationalId}`,
-        method: 'PUT',
-        body: { profile_picture },
-      }),
-      invalidatesTags: ['user', 'users'],
-    }),
-
-    // ❌ Delete user by National ID
-    deleteUser: builder.mutation({
-      query: (nationalId: number | string) => ({
-        url: `users/${nationalId}`,
+    // DELETE USER - Matches DELETE /api/users/delete/{{userId}}
+    deleteUser: builder.mutation<any, string>({
+      query: (userId) => ({
+        url: `users/delete/${userId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['user', 'users'],
     }),
-
-    // 🔍 Search users by last name (basic)
-    searchUsersByLastName: builder.query({
-      query: (lastName: string) => `users-search?lastName=${lastName}`,
-    }),
-
-    // 🔍 Search users by last name (full details)
-    searchUsersWithDetails: builder.query({
-      query: (lastName: string) => `details/users-search?lastName=${lastName}`,
-    }),
-
   }),
 });
 
-// ✅ Export Hooks
 export const {
-  useLoginUserMutation,
-  useRegisterUserMutation,
-  useRequestPasswordResetMutation,
-  useResetPasswordMutation,
-  useVerifyEmailMutation,
-  useGetAllUsersProfilesQuery,
-  useGetUserByNationalIdQuery,
-  useGetUserDetailsQuery,
+  useGetAllUsersQuery,
+  useGetUserByIdQuery,
+  useGetUserByRegNoQuery,
+  useGetUserByLastNameQuery,
+  useGetUserByEmailQuery,
+  useGetUsersBySchoolQuery,
+  useGetUsersCountQuery,
+  useGetUsersCountBySchoolQuery,
   useUpdateUserMutation,
-  useUpdateAdminUserMutation, // ✅ NEW: admin-level updates
-  useUpdateUserProfileImageMutation,
   useDeleteUserMutation,
-  useSearchUsersByLastNameQuery,
-  useSearchUsersWithDetailsQuery,
 } = userApi;

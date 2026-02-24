@@ -1,36 +1,53 @@
 import { useForm } from 'react-hook-form';
-import loginImage from '../../src/assets/image-UqgNANsLtSGIkgMfhkxPvvVyfWIhWH.png';
+import loginImage from '../../public/Laikipia-logo.png';
 import { Navbar } from '../components/Navbar';
 import { toast, Toaster } from 'sonner';
-import { userApi } from '../features/APIS/UserApi';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../features/Auth/AuthSlice';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { authApi } from '../features/APIS/Auth.Api';
+
 
 interface LoginDetails {
-  email: string;
+  reg_no: string;
   password: string;
 }
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginDetails>();
-  const [LoginUser, { isLoading }] = userApi.useLoginUserMutation();
+  const [loginUser, { isLoading }] = authApi.useLoginMutation();
   const navigate = useNavigate();
-  const Dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (data: LoginDetails) => {
-    const loadingToastId = toast.loading("Logging In...");
+    const toastId = toast.loading('Logging in...');
     try {
-      const res = await LoginUser(data).unwrap();
-      toast.success('✅ Logged in successfully', { id: loadingToastId });
-      Dispatch(setCredentials(res));
-      navigate(res.role === 'admin' ? '/AdminDashboard/analytics' : '/');
+      const res = await loginUser(data).unwrap();
+
+      // Save token to localStorage
+      if (res.token) localStorage.setItem('token', res.token);
+
+      // Save Redux state
+      dispatch(setCredentials({
+        user: res.user,
+        token: res.token || '',
+        role: res.user?.role || ''
+      }));
+
+      toast.success('✅ Logged in successfully', { id: toastId });
+
+      // Redirect based on role
+      navigate(res.user?.role === 'admin' ? '/admindashboard' : '/');
     } catch (error: any) {
-      const ErrorMessage = error?.data?.error?.error || error?.data?.error || error?.error || '❌ Something went wrong. Please try again.';
-      toast.error(`Failed to login: ${ErrorMessage}`, { id: loadingToastId });
+      const errorMsg =
+        error?.data?.error?.error ||
+        error?.data?.error ||
+        error?.error ||
+        '❌ Something went wrong. Please try again.';
+      toast.error(`Failed to login: ${errorMsg}`, { id: toastId });
     }
   };
 
@@ -51,20 +68,22 @@ const Login = () => {
         {/* Form Side */}
         <div className="flex items-center justify-center p-6">
           <div className="bg-base-200 shadow-xl rounded-2xl p-8 w-full max-w-md border-2 border-blue-500">
-            <h2 className="text-3xl font-bold mb-6 text-center">🎓 TicketStream Login Portal</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center">🎓 Laikipia E-Vote Login Portal</h2>
 
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-              {/* Email Field */}
+              {/* Registration Number Field */}
               <div>
-                <label className="block text-sm font-medium mb-1">📧 Email</label>
+                <label className="block text-sm font-medium mb-1">🆔 Registration Number</label>
                 <input
-                  type="email"
+                  type="text"
                   className="input input-bordered w-full"
-                  placeholder="Enter your email"
-                  {...register('email', { required: true })}
+                  placeholder="Enter your registration number"
+                  {...register('reg_no', { required: true })}
                 />
-                {errors.email && (
-                  <span className="text-error text-sm mt-1 block">Email is required.</span>
+                {errors.reg_no && (
+                  <span className="text-error text-sm mt-1 block">
+                    Registration number is required.
+                  </span>
                 )}
               </div>
 
@@ -81,7 +100,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-primary"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -92,14 +111,14 @@ const Login = () => {
                 )}
               </div>
 
-              {/* Forgot Password Link */}
+              {/* Forgot Password */}
               <div className="text-right">
                 <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
                   Forgot password?
                 </Link>
               </div>
 
-              {/* Submit Button */}
+              {/* Submit */}
               <button
                 type="submit"
                 className="btn btn-primary w-full mt-4 text-lg tracking-wide"

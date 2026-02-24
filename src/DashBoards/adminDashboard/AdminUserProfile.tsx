@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useGetUserByNationalIdQuery, useUpdateUserMutation } from '../../features/APIS/UserApi';
+import { useGetUserByIdQuery, useUpdateUserMutation } from '../../features/APIS/UserApi';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../App/store';
 import { Moon, Sun } from 'lucide-react';
@@ -8,7 +8,7 @@ import axios from 'axios';
 
 const AdminUserProfile: React.FC = () => {
   const nationalId = useSelector((state: RootState) => state.auth.user?.nationalId);
-  const { data: user, isLoading, refetch } = useGetUserByNationalIdQuery(nationalId!, { skip: !nationalId });
+  const { data: user, isLoading, refetch } = useGetUserByIdQuery(nationalId!, { skip: !nationalId });
   const [updateUser] = useUpdateUserMutation();
 
   const [editMode, setEditMode] = useState(false);

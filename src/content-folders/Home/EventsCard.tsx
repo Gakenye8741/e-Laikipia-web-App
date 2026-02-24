@@ -10,8 +10,9 @@ import {
   MapPin,
   Users,
   Tag,
-  
+  Ticket,
 } from "lucide-react";
+import { ticketApi } from "../../features/APIS/ticketsType.Api";
 
 type Venue = {
   name: string;
@@ -32,6 +33,13 @@ type EventDetails = {
   ticketsSold: number;
 };
 
+type TicketTypeData = {
+  ticketTypeId: number;
+  name: string;
+  quantity: number;
+  sold: number;
+};
+
 export const EventCard = () => {
   const navigate = useNavigate();
 
@@ -46,22 +54,17 @@ export const EventCard = () => {
   const displayedEvents = allEvents.slice(0, 3);
 
   return (
-    <section className="min-h-screen py-16 px-6 bg-base-100 text-base-content transition-colors duration-300">
+    <section className="min-h-screen py-16 px-6 bg-base-100 text-base-content">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl font-extrabold text-center text-primary mb-6 drop-shadow">
-          Upcoming Events
-        </h2>
-
+        <h2 className="text-4xl font-extrabold text-center text-primary mb-6">Upcoming Events</h2>
         <p className="text-lg text-base-content/70 max-w-3xl mx-auto text-center mb-10">
-          At <span className="text-primary font-semibold">TicketStream</span>, we bring you the best live entertainment experiences—from electrifying concerts and inspiring conferences to unforgettable festivals and shows. Explore our curated selection of upcoming events!
+          At <span className="text-primary font-semibold">TicketStream</span>, we bring you the best live entertainment experiences.
         </p>
 
         {error ? (
-          <div className="text-error text-center text-lg font-semibold">
-            Something went wrong. Please try again.
-          </div>
+          <div className="text-error text-center">Something went wrong.</div>
         ) : isLoading ? (
-          <div className="flex justify-center items-center h-64">
+          <div className="flex justify-center h-64 items-center">
             <PuffLoader color="#06b6d4" />
           </div>
         ) : displayedEvents.length === 0 ? (
@@ -97,12 +100,16 @@ const EventCardItem = ({
   navigate: ReturnType<typeof useNavigate>;
 }) => {
   const { data: media = [] } = mediaApi.useGetMediaByEventIdQuery(event.eventId);
+  const { data: ticketTypes = [] } = ticketApi.useGetTicketTypesByEventIdQuery(event.eventId);
 
   const firstImage = Array.isArray(media)
     ? media.find((m: any) => m.type === "image")
     : null;
 
   const price = parseFloat(event.ticketPrice as string);
+  const ticketsSold = Number(event.ticketsSold) || 0;
+  const ticketsTotal = Number(event.ticketsTotal) || 0;
+  const available = ticketsTotal - ticketsSold;
 
   return (
     <div className="card bg-base-200 shadow-xl hover:shadow-2xl transition-all duration-300">
@@ -130,30 +137,44 @@ const EventCardItem = ({
         </p>
 
         <div className="grid grid-cols-2 gap-3 text-sm text-base-content/80 border border-base-300 rounded-lg p-4 mt-4 bg-base-100">
-          {[
-            { Icon: CalendarDays, label: event.date },
-            { Icon: Clock, label: event.time },
-            { Icon: Building, label: event.venue?.name || "N/A" },
-            { Icon: MapPin, label: event.venue?.address || "N/A" },
-            { Icon: Users, label: event.venue?.capacity ?? "N/A" },
-            { Icon: Tag, label: event.category || "Uncategorized" },
-            // { Icon: Ticket, label: `Sold: ${event.ticketsSold}` },
-            // { Icon: Ticket, label: `Available: ${event.ticketsTotal - event.ticketsSold}` },
-          ].map(({ Icon, label }, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Icon className="w-4 h-4 text-primary" />
-              <span>{label}</span>
-            </div>
-          ))}
+          <div className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-primary" /><span>{event.date}</span></div>
+          <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-primary" /><span>{event.time}</span></div>
+          <div className="flex items-center gap-2"><Building className="w-4 h-4 text-primary" /><span>{event.venue?.name || "N/A"}</span></div>
+          <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /><span>{event.venue?.address || "N/A"}</span></div>
+          <div className="flex items-center gap-2"><Users className="w-4 h-4 text-primary" /><span>{event.venue?.capacity ?? "N/A"}</span></div>
+          <div className="flex items-center gap-2"><Tag className="w-4 h-4 text-primary" /><span>{event.category || "Uncategorized"}</span></div>
+          <div className="flex items-center gap-2"><Ticket className="w-4 h-4 text-primary" /><span>Sold: {ticketsSold}</span></div>
+          <div className="flex items-center gap-2"><Ticket className="w-4 h-4 text-primary" /><span>Available: {available}</span></div>
         </div>
+
+        {ticketTypes.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-base font-semibold mb-2 text-primary">Ticket Types</h4>
+            <ul className="space-y-1 text-sm">
+              {ticketTypes.map((type: TicketTypeData) => {
+                const sold = Number(type.sold) || 0;
+                const available = Number(type.quantity) - sold;
+
+                return (
+                  <li key={type.ticketTypeId} className="flex justify-between">
+                    <span>{type.name}</span>
+                    <span>Sold: {sold}</span>
+                    <span>Available: {available}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
         <div className="card-actions mt-4">
           <button
             onClick={() => navigate(`/events/${event.eventId}`)}
             className="btn btn-primary w-full"
+            disabled={available <= 0}
           >
             <ShoppingCart className="w-5 h-5" />
-            Book Now
+            {available <= 0 ? "Sold Out" : "Book Now"}
           </button>
         </div>
       </div>

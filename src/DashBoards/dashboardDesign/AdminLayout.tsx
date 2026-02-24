@@ -1,46 +1,64 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { AdminSideNav } from "../dashboardDesign/AdminSidenav";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { AdminSideNav } from "./AdminSidenav";
+
 
 export const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  return (
-    <div className="flex h-screen bg-base-100 text-base-content relative">
-      {/* Hamburger Menu (Mobile Only) */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-base-300 text-base-content rounded-lg border border-blue-500 shadow-lg hover:bg-base-200 transition"
-        aria-label="Open Sidebar"
-      >
-        <Menu size={24} />
-      </button>
+  // University Branding Colors
+  const PRIMARY_RED = "#b91c1c";
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-64 h-full fixed top-0 left-0 z-30 bg-base-200 border-r border-blue-500 shadow-xl">
-        <AdminSideNav onNavItemClick={() => {}} />
+  return (
+    /* Main Container: University White/Light Gray background */
+    <div className="flex h-screen bg-white text-slate-800 relative font-sans overflow-hidden">
+      
+      {/* MOBILE TRIGGER - University Red Glow */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="lg:hidden fixed bottom-6 right-6 z-[999] p-4 bg-[#b91c1c] text-white rounded-full shadow-[0_0_20px_rgba(185,28,28,0.4)] border border-[#b91c1c]/50 active:scale-90 transition-all"
+        >
+          <Menu size={24} strokeWidth={3} />
+        </button>
+      )}
+
+      {/* DESKTOP SIDEBAR - Matches Dashboard Aesthetic */}
+      <aside className="hidden lg:block w-72 h-full fixed top-0 left-0 z-30 border-r border-slate-100 bg-white shadow-sm">
+        <AdminSideNav />
       </aside>
 
-      {/* Mobile Sidebar + Overlay */}
+      {/* MOBILE SIDEBAR DRAWER */}
       {sidebarOpen && (
         <>
-          {/* Dark overlay */}
-          <div
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
+          {/* Overlay - z-[1000] ensures it covers the fixed top nav */}
+          <div 
+            className="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm lg:hidden" 
+            onClick={() => setSidebarOpen(false)} 
+          />
 
-          {/* Mobile Sidebar */}
-          <aside className="fixed top-0 left-0 z-50 w-64 h-full bg-base-200 text-base-content border-r border-blue-500 shadow-xl md:hidden">
+          {/* Sidebar Panel - University Style */}
+          <aside className="fixed top-0 left-0 z-[1001] w-[80%] max-w-[300px] h-full bg-white shadow-2xl lg:hidden transform transition-transform duration-300 border-r border-slate-200">
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              className="absolute top-4 right-4 z-[1002] p-2 text-slate-400 hover:text-[#b91c1c] transition-colors"
+            >
+              <X size={24} />
+            </button>
             <AdminSideNav onNavItemClick={() => setSidebarOpen(false)} />
           </aside>
         </>
       )}
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-4 md:ml-64 bg-base-100 text-base-content transition-all duration-300">
-        <Outlet />
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:ml-72 bg-slate-50 min-h-screen">
+        {/* SPACER FOR FIXED NAV: 
+            Adjust padding to match your specific Navbar height if necessary.
+        */}
+        <div className="pb-20 max-w-7xl mx-auto relative z-10">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

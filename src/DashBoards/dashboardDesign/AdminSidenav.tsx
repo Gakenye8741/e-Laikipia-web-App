@@ -1,79 +1,137 @@
+import React from "react";
 import { NavLink } from "react-router-dom";
 import {
-  TrendingUp,
-  Users,
-  ClipboardList,
-  User,
   LogOut,
-  DollarSign,
-  Ticket,
-  Camera,
-  Calendar,
-  FileText,
-  House,
+  Settings2,
+  Vote,
+  Users,
+  UserCircle,
+  GitGraph,
+  LayoutDashboard,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+import { MdAccountBox, MdBallot, MdEmojiPeople } from "react-icons/md";
 import { clearCredentials } from "../../features/Auth/AuthSlice";
 
-const navItems = [
-  { name: "Analytics", path: "analytics", icon: <TrendingUp className="text-indigo-400" /> },
-  { name: "Manage Users", path: "AllUsers", icon: <Users className="text-blue-400" /> },
-  { name: "Manage Bookings", path: "AllBookings", icon: <ClipboardList className="text-pink-500" /> },
-  { name: "Manage Venues", path: "Allvenues", icon: <House className="text-green-400" /> },
-  { name: "Manage Medias", path: "AllMedia", icon: <Camera className="text-yellow-400" /> },
-  { name: "Manage Events", path: "AllEvents", icon: <Calendar className="text-orange-400" /> },
-  { name: "Manage Payments", path: "AllPayments", icon: <DollarSign className="text-yellow-900" /> },
-  { name: "Manage Support Tickets", path: "supportTickets", icon: <Ticket className="text-purple-400" /> },
-  { name: "Manage Ticket Types", path: "ticketTypes", icon: <FileText className="text-teal-400" /> },
-  { name: "Sales Report", path: "SalesReports", icon: <User className="text-red-400" /> },
-  { name: "My Profile", path: "adminprofile", icon: <User className="text-purple-400" /> },
-  { name: "Logout", path: "#", icon: <LogOut className="text-red-500" /> },
+// --- TYPES & INTERFACES ---
+interface NavItem {
+  name: string;
+  path: string;
+  icon: React.ReactNode;
+}
+
+interface AdminSideNavProps {
+  onNavItemClick?: () => void;
+}
+
+/**
+ * Updated NavItems to strictly match the Router children paths.
+ * Note: These are relative paths to the parent '/admin' route.
+ */
+const navItems: NavItem[] = [
+  { name: "Analytics", path: "Analytics", icon: <GitGraph size={20} /> },
+  { name: "Create Accounts", path: "create-accounts", icon: <MdAccountBox size={20} /> },
+  { name: "Manage Users", path: "Manage-Users", icon: <Users size={20} /> },
+  { name: "Manage Elections", path: "AllElections", icon: <Vote size={20} /> },
+  { name: "Manage Positions", path: "Manage-positions", icon: <MdBallot size={20} /> },
+  { name: "Candidate Applications", path: "Manage-Applications", icon: <UserCircle size={20} /> },
+  { name: "Manage Candidates", path: "Manage-Candidates", icon: <MdEmojiPeople size={20} /> },
+  { name: "System Settings", path: "profile", icon: <Settings2 size={20} /> },
 ];
 
-export const AdminSideNav = ({ onNavItemClick }: { onNavItemClick?: () => void }) => {
+export const AdminSideNav: React.FC<AdminSideNavProps> = ({ onNavItemClick }) => {
   const dispatch = useDispatch();
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     dispatch(clearCredentials());
+    localStorage.removeItem('user');
+    toast.success("Admin Session Ended", {
+      style: { background: '#ffffff', color: '#b91c1c', border: '1px solid #fee2e2' }
+    });
     onNavItemClick?.();
   };
 
   return (
-    <aside className="h-full w-full p-4 bg-base-200 text-base-content space-y-2 overflow-y-auto rounded-lg shadow-md border border-blue-500 mt-17 border-r-2 border-b-4">
-      <h4 className="mt-1 mb-4 flex items-center justify-center text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-yellow-500">
-        <span className="mr-2">🛠️</span>
-        Admin Panel
-        <span className="ml-2">👑</span>
-      </h4>
+    <aside className="h-full w-full flex flex-col bg-white text-slate-600 overflow-hidden">
+      
+      {/* BRANDING: UNIVERSITY LOGO STYLE */}
+      <div className="p-8 pb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-[#b91c1c] rounded-xl shadow-lg shadow-red-100">
+            <LayoutDashboard size={22} className="text-white" />
+          </div>
+          <div className="flex flex-col leading-tight">
+            <h4 className="text-xl font-black text-slate-800 tracking-tighter uppercase">
+              Voter<span className="text-[#b91c1c]">Core</span>
+            </h4>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              University Admin
+            </span>
+          </div>
+        </div>
+      </div>
 
-      {navItems.map((item, index) =>
-        item.name === "Logout" ? (
-          <button
-            key={index}
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-base-300 transition w-full text-left"
-            aria-label="Logout"
-          >
-            {item.icon}
-            <span className="font-chewy">{item.name}</span>
-          </button>
-        ) : (
+      {/* NAVIGATION SECTION */}
+      <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+        {navItems.map((item) => (
           <NavLink
-            key={index}
+            key={item.path}
             to={item.path}
             onClick={onNavItemClick}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-base-300 ${
-                isActive ? "bg-base-300 font-semibold text-primary" : ""
+              `flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-200 group relative font-bold text-sm ${
+                isActive 
+                  ? "bg-red-50 text-[#b91c1c]" 
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
               }`
             }
-            aria-label={`Go to ${item.name}`}
           >
-            {item.icon}
-            <span className="font-chewy">{item.name}</span>
+            {/* Active Side Indicator */}
+            {({ isActive }) => (
+              <>
+                <span className={`absolute left-0 top-4 bottom-4 w-1 bg-[#b91c1c] rounded-r-full transition-all duration-300 ${
+                  isActive ? "opacity-100" : "opacity-0"
+                }`} />
+                
+                <span className="group-hover:scale-110 transition-transform duration-200">
+                  {item.icon}
+                </span>
+                
+                <span className="tracking-tight">
+                  {item.name}
+                </span>
+              </>
+            )}
           </NavLink>
-        )
-      )}
+        ))}
+      </nav>
+
+      {/* FOOTER SECTION */}
+      <div className="p-6 border-t border-slate-100 bg-slate-50/50">
+        <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-200 mb-4 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#b91c1c] to-[#7f1d1d] flex items-center justify-center text-white font-black text-sm shadow-md">
+            AD
+          </div>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-xs font-black text-slate-800 uppercase truncate">System Admin</span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Authorized</span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-red-100 text-[#b91c1c] hover:bg-[#b91c1c] hover:text-white transition-all w-full text-sm font-black uppercase tracking-tighter shadow-sm"
+        >
+          <LogOut size={16} />
+          <span>Sign Out</span>
+        </button>
+      </div>
     </aside>
   );
 };
+
+export default AdminSideNav;
