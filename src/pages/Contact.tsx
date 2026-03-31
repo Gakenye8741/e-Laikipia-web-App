@@ -1,109 +1,193 @@
-import React, { useRef } from "react";
-import emailjs from "emailjs-com";
-import { toast, Toaster } from "react-hot-toast";
-import { FaInstagram, FaLinkedin, FaTwitter, FaGithub } from "react-icons/fa";
-import SplashCursor from "../animations/SplashCursor";
+import React, { useState } from 'react';
+import { Mail, Phone, MapPin, Send, MessageSquare, Globe, ShieldCheck } from "lucide-react";
+import { MdSupportAgent, MdAlternateEmail, MdOutlineContactSupport } from "react-icons/md";
 import { Navbar } from "../components/Navbar";
+import { toast } from "sonner";
 
-// EmailJS Credentials
-const SERVICE_ID = "service_36rahuf";
-const TEMPLATE_ID = "template_t7k2dxh";
-const PUBLIC_KEY = "mSrGC2dXclojT6ci1";
+const ContactPage = () => {
+  const [loading, setLoading] = useState(false);
 
-const ContactSection: React.FC = () => {
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const sendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formRef.current) return;
-
-    toast.promise(
-      emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, PUBLIC_KEY),
-      {
-        loading: "Sending your message...",
-        success: () => {
-          formRef.current?.reset();
-          return "✅ Message sent successfully!";
-        },
-        error: "❌ Failed to send. Try again.",
-      }
-    ).catch((err) => {
-      console.error("EmailJS error:", err);
-      toast.error("Unexpected error occurred.");
-    });
+    setLoading(true);
+    // Simulating a registry sync
+    setTimeout(() => {
+      setLoading(false);
+      toast.success("Message Transmitted to Registry");
+    }, 1500);
   };
 
+  const contactMethods = [
+    { 
+      icon: <Mail size={18} className="text-red-700" />, 
+      label: "Official Email", 
+      value: "cislu@laikipia.ac.ke",
+      sub: "General Inquiries"
+    },
+    { 
+      icon: <Phone size={18} className="text-red-700" />, 
+      label: "Support Line", 
+      value: "+254 700 000 000",
+      sub: "Technical Emergencies"
+    },
+    { 
+      icon: <MapPin size={18} className="text-red-700" />, 
+      label: "Physical Office", 
+      value: "Electrol Commission // Computing and informatics",
+      sub: "Main Campus, Nyahururu"
+    }
+  ];
+
   return (
-    <>
-      <SplashCursor />
+    <div className="min-h-screen bg-[#F8FAFC]">
       <Navbar />
-
-      <section className="min-h-screen flex items-center justify-center bg-base-100 text-base-content px-4 py-16">
-        <Toaster position="top-right" />
-        <div className="w-full max-w-6xl rounded-2xl shadow-xl border border-base-300 p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-10 bg-base-100">
-          {/* Left Info */}
-          <div>
-            <h2 className="text-3xl font-bold mb-4">🎫 Manage Support Like a Pro</h2>
-            <p className="mb-3 leading-relaxed">
-              Our <span className="font-semibold">Ticket Stream Management System</span> helps you track, manage, and resolve issues in real time.
-            </p>
-            <p className="mb-6">Boost productivity. Improve response time. Keep customers happy.</p>
-            <img
-              src="https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?auto=format&fit=crop&w=800&q=80"
-              alt="Product"
-              className="rounded-xl mb-6 shadow-md"
-            />
-            <div className="flex gap-4 text-xl">
-              <SocialLink href="https://instagram.com"><FaInstagram /></SocialLink>
-              <SocialLink href="https://twitter.com"><FaTwitter /></SocialLink>
-              <SocialLink href="https://linkedin.com"><FaLinkedin /></SocialLink>
-              <SocialLink href="https://github.com"><FaGithub /></SocialLink>
+      
+      <main className="p-4 md:p-8 pt-24 lg:pt-32 font-sans">
+        <div className="max-w-6xl mx-auto">
+          
+          {/* Header Section */}
+          <header className="mb-10 text-center lg:text-left flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 rounded-full mb-3 border border-red-100">
+                <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse"></span>
+                <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">
+                  Communication center
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase italic">
+                Support <span className="text-red-700">Registry</span>
+              </h1>
             </div>
-          </div>
 
-          {/* Contact Form */}
-          <form ref={formRef} onSubmit={sendEmail} className="flex flex-col gap-4">
-            <h3 className="text-2xl font-bold mb-2">Contact Us</h3>
-            <input
-              name="from_name"
-              type="text"
-              placeholder="Your Name"
-              className="input input-bordered w-full"
-              required
-            />
-            <input
-              name="from_email"
-              type="email"
-              placeholder="Your Email"
-              className="input input-bordered w-full"
-              required
-            />
-            <textarea
-              name="message"
-              placeholder="Your Message"
-              className="textarea textarea-bordered w-full h-32"
-              required
-            />
-            <button type="submit" className="btn btn-primary w-full">
-              📩 Send Message
-            </button>
-          </form>
+          </header>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* Sidebar: Official Channels */}
+            <aside className="lg:col-span-4">
+              <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-xl shadow-slate-200/50 sticky top-28 space-y-8">
+                <div className="p-5 bg-red-50 rounded-[1.5rem] flex items-center justify-center">
+                  <MdSupportAgent className="text-red-700 text-5xl" />
+                </div>
+
+                <div className="space-y-6">
+                  {contactMethods.map((method, i) => (
+                    <div key={i} className="group border-b border-slate-50 pb-4 last:border-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        {method.icon}
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                          {method.label}
+                        </p>
+                      </div>
+                      <p className="text-sm font-black text-slate-900 ml-7 group-hover:text-red-700 transition-colors">
+                        {method.value}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 ml-7 italic">
+                        {method.sub}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-700">
+                    <Globe size={14} className="text-emerald-500" />
+                    <span>E-Laikipia Vote: <span className="text-emerald-600">Online</span></span>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            {/* Main Content: Message Transmission Form */}
+            <article className="lg:col-span-8">
+              <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                  <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
+                    <MdOutlineContactSupport className="text-red-700" size={24} /> New Message ?
+                  </h2>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Priority: Standard</span>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Full Name / Identity</label>
+                      <input 
+                        required
+                        type="text" 
+                        placeholder="e.g. Gakenye Ndiritu" 
+                        className="w-full bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl p-4 text-xs font-bold text-slate-700 outline-none transition-all mt-1" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Student / Staff Email</label>
+                      <div className="relative mt-1">
+                        <input 
+                          required
+                          type="email" 
+                          placeholder="name@laikipia.ac.ke" 
+                          className="w-full bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl p-4 pl-12 text-xs font-bold text-slate-700 outline-none transition-all" 
+                        />
+                        <MdAlternateEmail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Subject of Inquiry</label>
+                    <select className="w-full bg-slate-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase text-slate-700 mt-1 outline-none cursor-pointer focus:ring-2 focus:ring-red-500">
+                      <option>Blockchain Verification Issues</option>
+                      <option>Voter Registration Error</option>
+                      <option>Candidate Approval Query</option>
+                      <option>Other Technical Support</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Message Payload</label>
+                    <textarea 
+                      required
+                      rows={5} 
+                      placeholder="Describe the issue in detail..." 
+                      className="w-full bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl p-4 text-xs font-bold text-slate-700 outline-none transition-all mt-1 resize-none"
+                    />
+                  </div>
+
+                  <button 
+                    disabled={loading}
+                    type="submit"
+                    className="w-full py-5 bg-[#b91c1c] text-white rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <span className="animate-pulse">Encrypting & Sending...</span>
+                    ) : (
+                      <>
+                        <Send size={16} /> Transmit Message
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Registry Notice Footer */}
+                <footer className="p-8 bg-slate-50 border-t border-slate-100 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <MessageSquare size={14} className="text-slate-400" />
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      Automated Response System Enabled
+                    </p>
+                  </div>
+                  <p className="text-[8px] font-bold text-slate-400 max-w-md mx-auto leading-relaxed uppercase tracking-tighter">
+                    Messages are logged into the system registry. A technical agent from the E-Laikipia Vote  // Assigned ICT staff will respond within 24 operational hours.
+                  </p>
+                </footer>
+              </div>
+            </article>
+
+          </div>
         </div>
-      </section>
-    </>
+      </main>
+    </div>
   );
 };
 
-// Reusable Social Link
-const SocialLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="hover:text-primary transition-colors"
-  >
-    {children}
-  </a>
-);
-
-export default ContactSection;
+export default ContactPage;

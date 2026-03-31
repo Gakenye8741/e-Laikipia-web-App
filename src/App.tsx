@@ -1,7 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './App.css';
 import { Home } from './pages/Home';
-import { About } from './pages/About';
 import Login from './pages/Login';
 import { AdminDashBoard } from './pages/AdminDashBoard';
 
@@ -21,6 +20,9 @@ import { AllPositions } from './DashBoards/adminDashboard/AllPositions';
 import CandidateApplication from './DashBoards/adminDashboard/Applications';
 import NotificationManager from './DashBoards/adminDashboard/AllNotifications';
 import { AdminCandidateManager } from './DashBoards/adminDashboard/AllCandidates';
+import AboutPage from './pages/About';
+import DeveloperPage from './pages/Developer';
+import { AccountRegistry } from './DashBoards/adminDashboard/AccountRegistry';
 
 function App() {
   const Router = createBrowserRouter([
@@ -29,13 +31,15 @@ function App() {
       element: <RootLayout/>, // 👈 Apply TokenExpiryWatcher here
       children: [
         { path: '/', element: <Home /> },
-        { path: '/about', element: <About /> },
+        { path: '/about', element: <AboutPage /> },
         { path: '/login', element: <Login /> },
         { path: '/contact', element: <ContactForm /> },
         { path: "/email-verification", element: <EmailVerification />, errorElement: <Error /> },
         { path: "/forgot-password",element: <ForgotPassword />,errorElement: <Error /> },
-        { path: "/reset-password/:token",element: <ResetPassword />,errorElement: <Error />,
-  },
+        { path: "/reset-password/:token",element: <ResetPassword />,errorElement: <Error />},
+        { path: "/developer" , element: <DeveloperPage />,errorElement: <Error />},
+       
+  
       ],
     },
     {
@@ -55,6 +59,7 @@ function App() {
         { path: 'AllNotifications', element: <NotificationManager/>} ,
         { path: 'adminprofile', element: <AdminUserProfile /> },
          { path: 'Manage-Candidates', element: <AdminCandidateManager /> },
+           { path: "create-accounts" , element: <AccountRegistry />,errorElement: <Error />},
         
         
       ],

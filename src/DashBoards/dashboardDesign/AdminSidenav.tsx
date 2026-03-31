@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
   { name: "Manage Elections", path: "AllElections", icon: <Vote size={20} /> },
   { name: "Manage Positions", path: "Manage-positions", icon: <MdBallot size={20} /> },
   { name: "Candidate Applications", path: "Manage-Applications", icon: <UserCircle size={20} /> },
+   { name: "Manage Notifications", path: "AllNotifications", icon: <UserCircle size={20} /> },
   { name: "Manage Candidates", path: "Manage-Candidates", icon: <MdEmojiPeople size={20} /> },
   { name: "System Settings", path: "profile", icon: <Settings2 size={20} /> },
 ];

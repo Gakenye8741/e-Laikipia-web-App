@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { PuffLoader } from "react-spinners";
-import { FaEdit, FaTrash, FaSyncAlt, FaPlus, FaSearch, FaSync, FaTimes, FaGavel } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSyncAlt, FaPlus, FaSearch, FaSync, FaCalendarAlt } from "react-icons/fa";
 import { MdBallot } from "react-icons/md";
 
 import {
@@ -17,7 +17,7 @@ import { toast } from "sonner";
 const MySwal = withReactContent(Swal);
 
 export const AllElections = () => {
-  /* ================= FETCHING DATA (Position Style) ================= */
+  /* ================= FETCHING DATA ================= */
   const { data: electionsRaw, isLoading, error, refetch } = useGetAllElectionsQuery(undefined);
 
   /* ================= MUTATIONS ================= */
@@ -34,13 +34,23 @@ export const AllElections = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  /* ================= DATA GUARDS & NORMALIZATION ================= */
+  /* ================= DATA NORMALIZATION ================= */
   const elections = useMemo(() => {
     const data = (electionsRaw as any)?.elections || electionsRaw;
     return Array.isArray(data) ? data : [];
   }, [electionsRaw]);
 
   useEffect(() => setCurrentPage(1), [searchTerm, statusFilter, startDateFilter, endDateFilter]);
+
+  /* ================= DATE FORMATTER HELPER ================= */
+  const toISODate = (localDate: string) => {
+    if (!localDate) return null;
+    try {
+      return new Date(localDate).toISOString();
+    } catch (e) {
+      return null;
+    }
+  };
 
   /* ================= FILTER LOGIC ================= */
   const filteredElections = elections.filter((election: any) => {
@@ -57,24 +67,38 @@ export const AllElections = () => {
     currentPage * itemsPerPage
   );
 
-  /* ================= CREATE (University Style) ================= */
+  /* ================= CREATE (Updated with ISO Fix) ================= */
   const handleAddElection = async () => {
     const { value } = await MySwal.fire({
       title: '<span class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Registry System</span><br/><b class="text-slate-800 tracking-tighter italic uppercase text-2xl">Deploy New Election</b>',
       html: `
-        <div class="text-left font-sans p-2">
+        <div class="text-left font-sans p-2 overflow-x-hidden">
           <div class="mb-4">
-            <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Election Title</label>
-            <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="e.g. SRC General Election 2026" />
+            <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest text-nowrap">Election Title</label>
+            <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="e.g. LUSA General Election 2026" />
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          
+          <p class="text-[10px] font-black uppercase text-slate-400 mb-2 mt-4 border-b pb-1">Phase 1: Voter Balloting</p>
+          <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Start Date</label>
+              <label class="text-[9px] font-black text-slate-800 uppercase ml-1 tracking-widest">Start Date</label>
               <input id="start_date" type="datetime-local" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none" />
             </div>
             <div>
-              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">End Date</label>
+              <label class="text-[9px] font-black text-slate-800 uppercase ml-1 tracking-widest">End Date</label>
               <input id="end_date" type="datetime-local" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none" />
+            </div>
+          </div>
+
+          <p class="text-[10px] font-black uppercase text-red-700 mb-2 mt-4 border-b border-red-100 pb-1">Phase 2: Delegate Voting</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-[9px] font-black text-slate-800 uppercase ml-1 tracking-widest">Del. Start</label>
+              <input id="delegate_start_date" type="datetime-local" class="w-full bg-red-50 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none" />
+            </div>
+            <div>
+              <label class="text-[9px] font-black text-slate-800 uppercase ml-1 tracking-widest">Del. End</label>
+              <input id="delegate_end_date" type="datetime-local" class="w-full bg-red-50 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none" />
             </div>
           </div>
         </div>
@@ -87,6 +111,8 @@ export const AllElections = () => {
         const name = (document.getElementById("name") as HTMLInputElement).value;
         const start_date = (document.getElementById("start_date") as HTMLInputElement).value;
         const end_date = (document.getElementById("end_date") as HTMLInputElement).value;
+        const delegate_start_date = (document.getElementById("delegate_start_date") as HTMLInputElement).value;
+        const delegate_end_date = (document.getElementById("delegate_end_date") as HTMLInputElement).value;
 
         const persistAuth = localStorage.getItem("persist:auth");
         let created_by = null;
@@ -95,15 +121,23 @@ export const AllElections = () => {
           const userStr = authObj.user;
           if (userStr) {
             const userObj = JSON.parse(userStr);
-            created_by = userObj.user?.id;
+            created_by = userObj.user?.id || userObj.id;
           }
         }
 
-        if (!name || !start_date || !end_date || !created_by) {
-          Swal.showValidationMessage("Incomplete Registry Fields");
+        if (!name || !start_date || !end_date || !delegate_start_date || !delegate_end_date || !created_by) {
+          Swal.showValidationMessage("Incomplete Registry Fields (Phase 1 & 2 Required)");
           return;
         }
-        return { name, start_date, end_date, created_by };
+
+        return { 
+          name, 
+          start_date: toISODate(start_date), 
+          end_date: toISODate(end_date), 
+          delegate_start_date: toISODate(delegate_start_date), 
+          delegate_end_date: toISODate(delegate_end_date), 
+          created_by 
+        };
       },
     });
 
@@ -111,21 +145,33 @@ export const AllElections = () => {
       try {
         await createElection(value).unwrap();
         MySwal.fire({ title: "REGISTERED", text: "Election initialized successfully", icon: "success", confirmButtonColor: '#1e293b' });
-      } catch {
-        MySwal.fire({ title: "FAILURE", text: "Registry deployment failed", icon: "error", confirmButtonColor: '#b91c1c' });
+      } catch (err: any) {
+        MySwal.fire({ title: "FAILURE", text: err?.data?.message || "Registry deployment failed", icon: "error", confirmButtonColor: '#b91c1c' });
       }
     }
   };
 
-  /* ================= UPDATE ================= */
+  /* ================= UPDATE (Updated with ISO Fix) ================= */
   const handleEditElection = async (election: any) => {
+    const toLocal = (isoStr: string) => isoStr ? new Date(isoStr).toISOString().slice(0, 16) : "";
+
     const { value } = await MySwal.fire({
       title: '<b class="text-slate-800 uppercase italic">Modify Election Record</b>',
       html: `
-        <div class="text-left font-sans p-2">
+        <div class="text-left font-sans p-2 overflow-x-hidden">
           <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600" value="${election.name}" />
-          <input id="start_date" type="datetime-local" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none" value="${election.start_date}" />
-          <input id="end_date" type="datetime-local" class="w-full bg-slate-100 border-none rounded-xl p-4 text-xs font-bold outline-none" value="${election.end_date}" />
+          
+          <p class="text-[9px] font-black uppercase text-slate-400 mb-2">Phase 1: Voter Dates</p>
+          <div class="grid grid-cols-2 gap-2 mb-4">
+            <input id="start_date" type="datetime-local" class="bg-slate-100 border-none rounded-xl p-4 text-[10px] font-bold outline-none" value="${toLocal(election.start_date)}" />
+            <input id="end_date" type="datetime-local" class="bg-slate-100 border-none rounded-xl p-4 text-[10px] font-bold outline-none" value="${toLocal(election.end_date)}" />
+          </div>
+
+          <p class="text-[9px] font-black uppercase text-red-700 mb-2">Phase 2: Delegate Dates</p>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="delegate_start_date" type="datetime-local" class="bg-red-50 border-none rounded-xl p-4 text-[10px] font-bold outline-none" value="${toLocal(election.delegate_start_date)}" />
+            <input id="delegate_end_date" type="datetime-local" class="bg-red-50 border-none rounded-xl p-4 text-[10px] font-bold outline-none" value="${toLocal(election.delegate_end_date)}" />
+          </div>
         </div>
       `,
       showCancelButton: true,
@@ -136,20 +182,32 @@ export const AllElections = () => {
         const name = (document.getElementById("name") as HTMLInputElement).value;
         const start_date = (document.getElementById("start_date") as HTMLInputElement).value;
         const end_date = (document.getElementById("end_date") as HTMLInputElement).value;
-        if (!name || !start_date || !end_date) {
-          Swal.showValidationMessage("All fields required");
+        const delegate_start_date = (document.getElementById("delegate_start_date") as HTMLInputElement).value;
+        const delegate_end_date = (document.getElementById("delegate_end_date") as HTMLInputElement).value;
+        
+        if (!name || !start_date || !end_date || !delegate_start_date || !delegate_end_date) {
+          Swal.showValidationMessage("All Phase 1 & 2 fields required");
           return;
         }
-        return { electionId: election.id, name, start_date, end_date, created_by: election.created_by };
+
+        return { 
+          electionId: election.id, 
+          name, 
+          start_date: toISODate(start_date), 
+          end_date: toISODate(end_date), 
+          delegate_start_date: toISODate(delegate_start_date), 
+          delegate_end_date: toISODate(delegate_end_date), 
+          created_by: election.created_by 
+        };
       },
     });
 
     if (value) {
       try {
         await updateElection(value).unwrap();
-        MySwal.fire({ title: "UPDATED", icon: "success", confirmButtonColor: '#1e293b' });
-      } catch {
-        MySwal.fire({ title: "ERROR", icon: "error", confirmButtonColor: '#b91c1c' });
+        MySwal.fire({ title: "UPDATED", text: "Election record modified successfully", icon: "success", confirmButtonColor: '#1e293b' });
+      } catch (err: any) {
+        MySwal.fire({ title: "ERROR", text: err?.data?.message || "Update failed", icon: "error", confirmButtonColor: '#b91c1c' });
       }
     }
   };
@@ -272,16 +330,11 @@ export const AllElections = () => {
                   <option value="ongoing">Ongoing</option>
                   <option value="finished">Finished</option>
                 </select>
-
-                <div>
-                   <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Archive Start Date</label>
-                   <input type="date" value={startDateFilter} onChange={(e) => setStartDateFilter(e.target.value)} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase text-slate-700 mt-1" />
-                </div>
               </div>
             </div>
           </div>
 
-          {/* List Side (Transmission Feed) */}
+          {/* List Side */}
           <div className="lg:col-span-8">
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
@@ -311,12 +364,20 @@ export const AllElections = () => {
                       
                       <h3 className="text-base font-black text-slate-900 uppercase italic mb-1 tracking-tight">{election.name}</h3>
                       
-                      <div className="grid grid-cols-2 gap-4 mt-5 border-t border-slate-50 pt-5">
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em] leading-loose">
-                           Commencement: <br/><span className="text-slate-800 text-xs font-black">{new Date(election.start_date).toLocaleString()}</span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5 border-t border-slate-50 pt-5">
+                        <div>
+                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b w-fit">Phase 1: Voter Cycle</p>
+                          <div className="flex flex-col gap-1">
+                            <div className="text-[9px] font-bold text-slate-400 uppercase">Start: <span className="text-slate-800 font-black">{new Date(election.start_date).toLocaleString()}</span></div>
+                            <div className="text-[9px] font-bold text-slate-400 uppercase">End: <span className="text-slate-800 font-black">{new Date(election.end_date).toLocaleString()}</span></div>
+                          </div>
                         </div>
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em] leading-loose">
-                           Conclusion: <br/><span className="text-slate-800 text-xs font-black">{new Date(election.end_date).toLocaleString()}</span>
+                        <div>
+                          <p className="text-[8px] font-black text-red-400 uppercase tracking-widest mb-2 border-b w-fit">Phase 2: Delegate Cycle</p>
+                          <div className="flex flex-col gap-1">
+                            <div className="text-[9px] font-bold text-slate-400 uppercase">Start: <span className="text-red-700 font-black">{election.delegate_start_date ? new Date(election.delegate_start_date).toLocaleString() : 'N/A'}</span></div>
+                            <div className="text-[9px] font-bold text-slate-400 uppercase">End: <span className="text-red-700 font-black">{election.delegate_end_date ? new Date(election.delegate_end_date).toLocaleString() : 'N/A'}</span></div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -334,11 +395,11 @@ export const AllElections = () => {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-center gap-3">
-                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-4 py-2 text-[10px] font-black uppercase text-slate-600 disabled:opacity-20 hover:text-red-600 transition-colors">Prev Segment</button>
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-4 py-2 text-[10px] font-black uppercase text-slate-600 disabled:opacity-20 hover:text-red-600 transition-colors">Prev</button>
                   {[...Array(totalPages)].map((_, i) => (
-                    <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-2xl text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-red-700 text-white shadow-lg shadow-red-200 scale-110' : 'bg-white border border-slate-200 text-slate-400 hover:bg-red-50 hover:text-red-600'}`}>{i + 1}</button>
+                    <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-10 h-10 rounded-2xl text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-red-700 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400'}`}>{i + 1}</button>
                   ))}
-                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-4 py-2 text-[10px] font-black uppercase text-slate-600 disabled:opacity-20 hover:text-red-600 transition-colors">Next Segment</button>
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-4 py-2 text-[10px] font-black uppercase text-slate-600 disabled:opacity-20 hover:text-red-600 transition-colors">Next</button>
                 </div>
               )}
             </div>

@@ -3,7 +3,8 @@ import { Navbar } from "../components/Navbar";
 
 
 import { Fade,  } from "react-awesome-reveal"; // Add more animations if needed
-import App from "../content-folders/Home/HeroHomeSection";
+import HeroHomeSection from "../content-folders/Home/HeroHomeSection";
+import AnalyticsOverview from "../content-folders/Home/Analytics";
 
 export const Home = () => {
   return (
@@ -12,8 +13,9 @@ export const Home = () => {
 
       {/* Hero Section - Fade In from Bottom */}
       <Fade triggerOnce cascade damping={0.1}>
-        <App />
+       <HeroHomeSection />
       </Fade>
+
 
 
       {/* Footer - Simple Fade In */}

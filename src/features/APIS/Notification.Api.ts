@@ -1,13 +1,27 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: "SYSTEM" | "REMINDER" | "ELECTION";
+  user_id: string | null;
+  election_id: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+interface NotificationsResponse {
+  notifications: Notification[];
+  message?: string;
+}
+
 const baseQuery = fetchBaseQuery({
-  // Pointing to the root API to keep endpoint definitions clean
-  baseUrl: "https://online-voting-system-oq4p.onrender.com/api", 
+  // Backend Production URL
+  baseUrl: "https://online-voting-system-oq4p.onrender.com/api/notifications", 
   prepareHeaders: (headers) => {
-    // Ensure we are grabbing the token exactly how your auth system saves it
     const token = localStorage.getItem("token");
     if (token) {
-      // Standard JWT format: Bearer <token>
       headers.set("Authorization", `Bearer ${token}`);
     }
     headers.set("Content-Type", "application/json");
@@ -20,95 +34,117 @@ export const notificationApi = createApi({
   baseQuery,
   tagTypes: ["Notifications"],
   endpoints: (builder) => ({
-    // GET ALL (Admin) - Fetches from /api/notifications
-    getAllNotifications: builder.query<any[], void>({
-      query: () => "/notifications",
-      providesTags: ["Notifications"],
-    }),
     
-    // GET BY USER ID - Fetches from /api/notifications/user/:userId
-    getUserNotifications: builder.query<any[], string>({
-      query: (userId) => `/notifications/user/${userId}`,
+    // ==========================================
+    // ADMIN SENDING ACTIONS
+    // ==========================================
+
+    /** * BROADCAST: Sends to ALL students and triggers push 
+     */
+    broadcastNotification: builder.mutation<any, Partial<Notification>>({
+      query: (body) => ({
+        url: "/broadcast",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
+
+    /** * BULK: Sends to a list of specific userIds 
+     */
+    sendBulkNotifications: builder.mutation<any, { userIds: string[]; payload: Partial<Notification> }>({
+      query: (body) => ({
+        url: "/bulk",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
+
+    /** * CREATE: Sends a single notification 
+     */
+    createNotification: builder.mutation<any, Partial<Notification>>({
+      query: (body) => ({
+        url: "/create",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
+
+    // ==========================================
+    // DATA RETRIEVAL
+    // ==========================================
+
+    /**
+     * Fetch all system notifications (Admin View)
+     */
+    getAllNotifications: builder.query<Notification[], void>({
+      query: () => "/",
+      transformResponse: (response: NotificationsResponse) => response.notifications || [],
       providesTags: ["Notifications"],
     }),
 
-    // CREATE SINGLE (Admin)
-    createNotification: builder.mutation<any, any>({
-      query: (body) => ({
-        url: "/notifications/create",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Notifications"],
-    }),
+    /**
+     * Fetch notifications for a specific user
+     */
+   getUserNotifications: builder.query<Notification[], string>({
+  query: (userId) => `user/${userId}`,
+  // This is the critical fix:
+  transformResponse: (response: { notifications: Notification[] }) => {
+    return response.notifications || [];
+  },
+  providesTags: ["Notifications"],
+}),
 
-    // BULK SEND (Admin)
-    sendBulkNotifications: builder.mutation<any, { userIds: string[]; payload: any }>({
-      query: (body) => ({
-        url: "/notifications/bulk",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Notifications"],
-    }),
+    // ==========================================
+    // MANAGEMENT ACTIONS
+    // ==========================================
 
-    // BROADCAST ALL (Admin)
-    broadcastNotification: builder.mutation<any, any>({
-      query: (body) => ({
-        url: "/notifications/broadcast",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Notifications"],
-    }),
-
-    // MARK AS READ
     markAsRead: builder.mutation<any, string>({
       query: (notificationId) => ({
-        url: `/notifications/mark-read/${notificationId}`,
-        method: "PUT",
-        body: { is_read: true },
-      }),
-      invalidatesTags: ["Notifications"],
-    }),
-
-    // MARK ALL READ
-    markAllRead: builder.mutation<any, string>({
-      query: (userId) => ({
-        url: `/notifications/mark-all-read/${userId}`,
+        url: `/mark-read/${notificationId}`,
         method: "PUT",
       }),
       invalidatesTags: ["Notifications"],
     }),
 
-    // DELETE ONE
     deleteNotification: builder.mutation<any, string>({
       query: (id) => ({
-        url: `/notifications/delete/${id}`,
+        url: `/delete/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Notifications"],
     }),
 
-    // DELETE ALL FOR USER
     deleteAllUserNotifications: builder.mutation<any, string>({
       query: (userId) => ({
-        url: `/notifications/delete-all/${userId}`,
+        url: `/delete-all/${userId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Notifications"],
+    }),
+
+    /** * Register device token for push notifications
+     */
+    registerPushToken: builder.mutation<{ message: string }, { userId: string; pushToken: string }>({
+      query: (body) => ({
+        url: "/register-token",
+        method: "PATCH",
+        body,
+      }),
     }),
   }),
 });
 
 export const {
+  useBroadcastNotificationMutation,
+  useSendBulkNotificationsMutation,
+  useCreateNotificationMutation,
   useGetAllNotificationsQuery,
   useGetUserNotificationsQuery,
-  useCreateNotificationMutation,
-  useSendBulkNotificationsMutation,
-  useBroadcastNotificationMutation,
   useMarkAsReadMutation,
-  useMarkAllReadMutation,
   useDeleteNotificationMutation,
   useDeleteAllUserNotificationsMutation,
+  useRegisterPushTokenMutation,
 } = notificationApi;

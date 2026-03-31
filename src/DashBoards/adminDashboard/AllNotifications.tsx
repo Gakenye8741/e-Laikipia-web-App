@@ -22,6 +22,7 @@ const NotificationManager = () => {
   const [targetType, setTargetType] = useState<'ALL' | 'SPECIFIC'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false); // NEW: Toggle for Push Preview
   const [formData, setFormData] = useState({
     title: '',
     message: '',
@@ -49,22 +50,29 @@ const NotificationManager = () => {
 
     try {
       if (targetType === 'ALL') {
+        // Triggering Global Push Notification via Broadcast
         await broadcast({
           title: formData.title,
           message: formData.message,
-          type: formData.type,
+          type: formData.type as any,
           is_read: false
         }).unwrap();
       } else {
         if (!formData.selectedUserId) return toast.error("Please select a recipient");
+        // Triggering Targeted Push Notification via Bulk
         await sendBulk({
           userIds: [formData.selectedUserId],
-          payload: { title: formData.title, message: formData.message, type: formData.type, is_read: false }
+          payload: { 
+            title: formData.title, 
+            message: formData.message, 
+            type: formData.type as any, 
+            is_read: false 
+          }
         }).unwrap();
       }
 
       setShowConfirmModal(true); // Show confirmation modal
-      setFormData({ ...formData, title: '', message: '', selectedUserId: '' });
+      setFormData({ ...formData, title: '', message: '', selectedUserId: '', type: 'SYSTEM' });
       refetchHistory();
     } catch (err: any) {
       toast.error(err?.data?.message || "Transmission failed");
@@ -84,6 +92,30 @@ const NotificationManager = () => {
   return (
     <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans relative">
       
+      {/* --- FLOATING MOBILE PREVIEW (NEW) --- */}
+      {showPreview && (
+        <div className="fixed bottom-8 right-8 z-[90] animate-in slide-in-from-right-10 duration-500">
+          <div className="w-[300px] bg-slate-900/95 backdrop-blur-md rounded-[2.5rem] p-4 shadow-2xl border border-white/10 relative overflow-hidden">
+            <div className="w-20 h-5 bg-black absolute top-0 left-1/2 -translate-x-1/2 rounded-b-xl z-10"></div>
+            <div className="mt-8">
+               <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-4 ml-2">Device Preview</p>
+               <div className="bg-white/10 border border-white/10 rounded-3xl p-4 backdrop-blur-lg">
+                 <div className="flex items-center gap-3 mb-2">
+                    <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center text-[8px] font-bold text-white">L</div>
+                    <span className="text-[10px] font-black text-white/80 uppercase tracking-tight">LUEC Official</span>
+                    <span className="text-[9px] text-white/40 ml-auto font-medium">now</span>
+                 </div>
+                 <h4 className="text-xs font-black text-white uppercase truncate">{formData.title || "Headline"}</h4>
+                 <p className="text-[11px] text-white/60 leading-tight mt-1 line-clamp-2 font-medium">
+                    {formData.message || "Enter content to preview notification..."}
+                 </p>
+               </div>
+            </div>
+            <div className="w-24 h-1 bg-white/20 mx-auto mt-8 rounded-full"></div>
+          </div>
+        </div>
+      )}
+
       {/* --- CONFIRMATION MODAL --- */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
@@ -149,7 +181,16 @@ const NotificationManager = () => {
           {/* Form Side */}
           <div className="lg:col-span-5">
             <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-xl shadow-slate-200/50 sticky top-8">
-              <h2 className="text-lg font-black text-slate-800 uppercase mb-6 tracking-tight">Create New Alert</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">Create New Alert</h2>
+                <button 
+                  onClick={() => setShowPreview(!showPreview)}
+                  className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${showPreview ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+                >
+                  {showPreview ? 'Hide Preview' : 'Show Preview'}
+                </button>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-3 ml-1">Send To:</label>
@@ -239,7 +280,6 @@ const NotificationManager = () => {
                           {note.type}
                         </span>
                         
-                        {/* --- DELETE BUTTON --- */}
                         <button 
                           onClick={() => handleDelete(note.id)}
                           className="opacity-0 group-hover:opacity-100 p-2 text-rose-400 hover:text-rose-600 transition-all text-[10px] font-black uppercase flex items-center gap-1"

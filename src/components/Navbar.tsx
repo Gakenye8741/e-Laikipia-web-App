@@ -11,12 +11,12 @@ import {
   ChevronDown, 
   Phone, 
   Info, 
-  Code 
+  Code,
+  ShieldCheck
 } from "lucide-react";
 
 import Typed from "typed.js";
 import "./animate.css";
-import { ThemeToggle } from "./ThemeToggle";
 import { MdDashboard } from "react-icons/md";
 
 export const Navbar = () => {
@@ -27,10 +27,11 @@ export const Navbar = () => {
 
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  // Fixed path based on your Redux usage in previous screens
   const Name = useSelector((state: RootState) => state.auth.user?.user?.name);
 
   const isActive = (path: string) =>
-    location.pathname === path ? "text-primary font-bold" : "";
+    location.pathname === path ? "text-[#b91c1c] font-black italic underline underline-offset-8 decoration-2" : "text-slate-600";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -46,13 +47,13 @@ export const Navbar = () => {
   useEffect(() => {
     const typed = new Typed(typedRef.current, {
       strings: [
-        "Laikipia E-Vote",
-        "Secure Election",
-        "Trusted Governance"
+        "LAIKIPIA E-VOTE",
+        "SECURE REGISTRY",
+        "BLOCKCHAIN LEDGER"
       ],
-      typeSpeed: 100,
-      backSpeed: 30,
-      cursorChar: "|",
+      typeSpeed: 80,
+      backSpeed: 40,
+      cursorChar: "_",
       loop: true,
     });
 
@@ -67,119 +68,67 @@ export const Navbar = () => {
   return (
     <>
       <div
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-base-300 ${
-          scrolled ? "backdrop-blur bg-base-100/70 shadow-md" : "bg-base-100"
+        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 border-b ${
+          scrolled 
+            ? "backdrop-blur-xl bg-white/80 border-slate-200 shadow-xl shadow-slate-200/40 py-1" 
+            : "bg-[#F8FAFC] border-transparent py-3"
         }`}
       >
-        <div className="navbar px-4">
+        <div className="max-w-7xl mx-auto navbar px-4 lg:px-8">
 
-          {/* LEFT: LOGO + MOBILE MENU */}
+          {/* LEFT: LOGO */}
           <div className="navbar-start">
-            <div className="dropdown">
-              <button
-                className="btn btn-ghost lg:hidden"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                {menuOpen ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                )}
-              </button>
-
-              {/* Mobile Menu */}
-              <ul className={`menu menu-sm dropdown-content bg-base-100 rounded-box shadow mt-3 w-52 p-2 z-10 font-semibold ${menuOpen ? "block" : "hidden"}`}>
-                <li>
-                  <Link className={isActive("/")} to="/" onClick={() => setMenuOpen(false)}>
-                    <Home className="h-4 w-4 mr-2" /> Home
-                  </Link>
-                </li>
-                <li>
-                  <Link className={isActive("/about")} to="/about" onClick={() => setMenuOpen(false)}>
-                    <Info className="h-4 w-4 mr-2" /> About
-                  </Link>
-                </li>
-                <li>
-                  <Link className={isActive("/contact")} to="/contact" onClick={() => setMenuOpen(false)}>
-                    <Phone className="h-4 w-4 mr-2" /> Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link className={isActive("/developer")} to="/developer" onClick={() => setMenuOpen(false)}>
-                    <Code className="h-4 w-4 mr-2" /> Developer
-                  </Link>
-                </li>
-                {!isAuthenticated && (
-                  <li>
-                    <Link to="/login" className={isActive("/login")} onClick={() => setMenuOpen(false)}>
-                      <LogIn className="h-4 w-4 mr-2" /> Admin Login
-                    </Link>
-                  </li>
-                )}
-                {isAuthenticated && (
-                  <li>
-                    <button onClick={handleLogout}>
-                      <LogOut className="h-4 w-4 mr-2" /> Logout
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </div>
-
-            {/* LOGO + AUTOTYPE TITLE */}
-            <Link to="/" className="btn btn-ghost text-xl font-bold flex items-center gap-1 ml-2">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="bg-[#b91c1c] p-2 rounded-xl rotate-3 group-hover:rotate-0 transition-transform shadow-lg shadow-red-200">
+                <ShieldCheck className="text-white h-5 w-5" />
+              </div>
               <span 
                 ref={typedRef} 
-                className="tracking-wide text-primary text-sm sm:text-base md:text-xl lg:text-2xl" 
+                className="font-black tracking-tighter text-slate-900 text-sm sm:text-base md:text-xl uppercase italic select-none" 
               />
             </Link>
           </div>
 
-          {/* CENTER (DESKTOP MENU) */}
+          {/* CENTER: DESKTOP MENU (REGISTRY STYLE) */}
           <div className="navbar-center hidden lg:flex">
-            <ul className="menu menu-horizontal px-1 text-lg font-semibold gap-2">
-              <li><Link className={isActive("/")} to="/"><Home className="h-4 w-4 mr-1" /> Home</Link></li>
-              <li><Link className={isActive("/about")} to="/about"><Info className="h-4 w-4 mr-1" /> About</Link></li>
-              <li><Link className={isActive("/contact")} to="/contact"><Phone className="h-4 w-4 mr-1" /> Contact</Link></li>
-              <li><Link className={isActive("/developer")} to="/developer"><Code className="h-4 w-4 mr-1" /> Developer</Link></li>
+            <ul className="flex items-center gap-8 text-[11px] font-black uppercase tracking-[0.15em]">
+              <li><Link className={`${isActive("/")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/"><Home size={14} /> Home</Link></li>
+              <li><Link className={`${isActive("/about")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/about"><Info size={14} /> About</Link></li>
+              <li><Link className={`${isActive("/contact")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/contact"><Phone size={14} /> Contact</Link></li>
+              <li><Link className={`${isActive("/developer")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/developer"><Code size={14} /> Developer</Link></li>
             </ul>
           </div>
 
-          {/* RIGHT: THEME + LOGIN / LOGOUT */}
-          <div className="navbar-end flex items-center gap-3">
-            <ThemeToggle />
+          {/* RIGHT: THEME + AUTH */}
+          <div className="navbar-end flex items-center gap-4">
 
-            {!isAuthenticated && (
-              <Link to="/login" className="btn btn-primary btn-sm flex items-center gap-2">
-                <LogIn className="h-4 w-4" /> Admin Login
+            {!isAuthenticated ? (
+              <Link to="/login" className="px-5 py-2.5 bg-[#1e293b] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#b91c1c] transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                <LogIn size={14} /> Admin Access
               </Link>
-            )}
-
-            {isAuthenticated && (
+            ) : (
               <div className="dropdown dropdown-end">
-                <label tabIndex={0} className="btn btn-outline btn-primary flex items-center gap-2">
-                  {Name}
-                  <ChevronDown className="h-4 w-4" />
+                <label tabIndex={0} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="text-right hidden sm:block">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">User Name</p>
+                    <p className="text-sm font-black text-slate-900 uppercase italic">{Name}</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-xl bg-red-50 border-2 border-red-100 flex items-center justify-center text-[#b91c1c] group-hover:bg-[#b91c1c] group-hover:text-white transition-all shadow-sm">
+                    <ChevronDown size={18} />
+                  </div>
                 </label>
-                <ul tabIndex={0} className="menu dropdown-content bg-base-100 shadow rounded-box w-52 mt-2">
+                <ul tabIndex={0} className="dropdown-content mt-4 z-[110] p-2 shadow-2xl bg-white border border-slate-100 rounded-2xl w-60 overflow-hidden">
+                  <li className="px-4 py-3 border-b border-slate-50 mb-1">
+                    <p className="text-[9px] font-black text-slate-400 uppercase">Session Management</p>
+                  </li>
                   <li>
-                    <button  className="flex items-center gap-2">
-                       <MdDashboard className="h-5 w-5" /> <Link to="/admindashboard/AllElections">Admin Dashboard
-                      </Link>
-                     
-                    </button>
-                    <button onClick={handleLogout} className="flex items-center gap-2">
-                      <LogOut className="h-5 w-5" /> Logout
+                    <Link to="/admindashboard/AllElections" className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-slate-700 hover:text-[#b91c1c] rounded-xl transition-all font-bold text-xs uppercase tracking-tight">
+                       <MdDashboard size={18} /> Admin Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-400 hover:text-slate-900 rounded-xl transition-all font-bold text-xs uppercase tracking-tight">
+                      <LogOut size={18} /> Terminate Session
                     </button>
                   </li>
                 </ul>
@@ -189,13 +138,13 @@ export const Navbar = () => {
         </div>
       </div>
 
-      {/* MOBILE BOTTOM BAR */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-base-100/70 backdrop-blur border-t shadow-md z-50">
-        <ul className="flex justify-around items-center py-2 font-semibold text-sm sm:text-base">
-          <li><Link to="/" className={isActive("/")}><Home className="h-4 w-4 mr-1" />Home</Link></li>
-          <li><Link to="/about" className={isActive("/about")}><Info className="h-4 w-4 mr-1" />About</Link></li>
-          <li><Link to="/contact" className={isActive("/contact")}><Phone className="h-4 w-4 mr-1" />Contact</Link></li>
-          <li><Link to="/developer" className={isActive("/developer")}><Code className="h-4 w-4 mr-1" />Developer</Link></li>
+      {/* MOBILE BOTTOM NAVIGATION (REGISTRY THEME) */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl z-[100] px-4 py-3">
+        <ul className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
+          <li><Link to="/" className={`flex flex-col items-center gap-1 ${location.pathname === "/" ? "text-white" : ""}`}><Home size={18} />Home</Link></li>
+          <li><Link to="/about" className={`flex flex-col items-center gap-1 ${location.pathname === "/about" ? "text-white" : ""}`}><Info size={18} />About</Link></li>
+          <li><Link to="/contact" className={`flex flex-col items-center gap-1 ${location.pathname === "/contact" ? "text-white" : ""}`}><Phone size={18} />Contact</Link></li>
+          <li><Link to="/developer" className={`flex flex-col items-center gap-1 ${location.pathname === "/developer" ? "text-white" : ""}`}><Code size={18} />Dev</Link></li>
         </ul>
       </div>
     </>
