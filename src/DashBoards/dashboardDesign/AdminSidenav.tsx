@@ -2,18 +2,20 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import {
   LogOut,
-  Settings2,
-  Vote,
-  Users,
-  UserCircle,
-  GitGraph,
   LayoutDashboard,
-  Gavel,
-  VoteIcon,
+  Users,
+  ShieldCheck,
+  FileBadge,
+  MessageSquareQuote,
+  Megaphone,
+  Fingerprint,
+  Users2,
+  ListChecks,
+  Scale,
+  History,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
-import { MdAccountBox, MdBallot, MdEmojiPeople } from "react-icons/md";
 import { clearCredentials } from "../../features/Auth/AuthSlice";
 
 // --- TYPES & INTERFACES ---
@@ -23,26 +25,56 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
+interface NavGroup {
+  groupName: string;
+  items: NavItem[];
+}
+
 interface AdminSideNavProps {
   onNavItemClick?: () => void;
 }
 
 /**
- * Updated NavItems to strictly match the Router children paths.
- * Note: These are relative paths to the parent '/admin' route.
+ * GROUPED NAVIGATION ITEMS
+ * Organized by logic for better UX
  */
-const navItems: NavItem[] = [
-  { name: "Analytics", path: "Analytics", icon: <GitGraph size={20} /> },
-  { name: "Create Accounts", path: "create-accounts", icon: <MdAccountBox size={20} /> },
-  { name: "Manage Users", path: "Manage-Users", icon: <Users size={20} /> },
-  { name: "Manage Elections", path: "AllElections", icon: <Vote size={20} /> },
-  { name: "Manage Positions", path: "Manage-positions", icon: <MdBallot size={20} /> },
-  { name: "Candidate Applications", path: "Manage-Applications", icon: <UserCircle size={20} /> },
-  { name: "Manage Appeals", path: "Manage-appeals", icon: <Gavel size={20} /> },
-  { name: "Manage Notifications", path: "AllNotifications", icon: <UserCircle size={20} /> },
-  { name: "Manage Candidates", path: "Manage-Candidates", icon: <MdEmojiPeople size={20} /> },
-  { name: "Manage Votes", path: "Manage-Votes", icon: <VoteIcon size={20} /> },
-  { name: "Manage Coalition", path: "Manage-Coalition", icon: <VoteIcon size={20} /> },
+const navGroups: NavGroup[] = [
+  {
+    groupName: "Overview",
+    items: [
+      { name: "Analytics", path: "Analytics", icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    groupName: "User Management",
+    items: [
+      { name: "Create Accounts", path: "create-accounts", icon: <ShieldCheck size={18} /> },
+      { name: "Manage Users", path: "Manage-Users", icon: <Users size={18} /> },
+    ],
+  },
+  {
+    groupName: "Election Operations",
+    items: [
+      { name: "Manage Elections", path: "AllElections", icon: <ListChecks size={18} /> },
+      { name: "Manage Positions", path: "Manage-positions", icon: <FileBadge size={18} /> },
+      { name: "Manage Coalitions", path: "Manage-Coalition", icon: <Users2 size={18} /> },
+    ],
+  },
+  {
+    groupName: "Candidate Processing",
+    items: [
+      { name: "Applications", path: "Manage-Applications", icon: <MessageSquareQuote size={18} /> },
+      { name: "Manage Candidates", path: "Manage-Candidates", icon: <Fingerprint size={18} /> },
+      { name: "Manage Appeals", path: "Manage-appeals", icon: <Scale size={18} /> },
+    ],
+  },
+  {
+    groupName: "Governance",
+    items: [
+      { name: "Manage Votes", path: "Manage-Votes", icon: <History size={18} /> },
+      { name: "Notifications", path: "AllNotifications", icon: <Megaphone size={18} /> },
+    ],
+  },
 ];
 
 export const AdminSideNav: React.FC<AdminSideNavProps> = ({ onNavItemClick }) => {
@@ -58,9 +90,9 @@ export const AdminSideNav: React.FC<AdminSideNavProps> = ({ onNavItemClick }) =>
   };
 
   return (
-    <aside className="h-full w-full flex flex-col bg-white text-slate-600 overflow-hidden">
+    <aside className="h-full w-full flex flex-col bg-white text-slate-600 border-r border-slate-100 overflow-hidden">
       
-      {/* BRANDING: UNIVERSITY LOGO STYLE */}
+      {/* BRANDING */}
       <div className="p-8 pb-6">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-[#b91c1c] rounded-xl shadow-lg shadow-red-100">
@@ -78,37 +110,44 @@ export const AdminSideNav: React.FC<AdminSideNavProps> = ({ onNavItemClick }) =>
       </div>
 
       {/* NAVIGATION SECTION */}
-      <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto custom-scrollbar">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={onNavItemClick}
-            className={({ isActive }) =>
-              `flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-200 group relative font-bold text-sm ${
-                isActive 
-                  ? "bg-red-50 text-[#b91c1c]" 
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-              }`
-            }
-          >
-            {/* Active Side Indicator */}
-            {({ isActive }) => (
-              <>
-                <span className={`absolute left-0 top-4 bottom-4 w-1 bg-[#b91c1c] rounded-r-full transition-all duration-300 ${
-                  isActive ? "opacity-100" : "opacity-0"
-                }`} />
-                
-                <span className="group-hover:scale-110 transition-transform duration-200">
-                  {item.icon}
-                </span>
-                
-                <span className="tracking-tight">
-                  {item.name}
-                </span>
-              </>
-            )}
-          </NavLink>
+      <nav className="flex-1 px-4 py-2 space-y-6 overflow-y-auto custom-scrollbar">
+        {navGroups.map((group) => (
+          <div key={group.groupName} className="space-y-1">
+            <h5 className="px-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2">
+              {group.groupName}
+            </h5>
+            
+            {group.items.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onNavItemClick}
+                className={({ isActive }) =>
+                  `flex items-center gap-3.5 px-5 py-3 rounded-xl transition-all duration-200 group relative font-bold text-[13px] ${
+                    isActive 
+                      ? "bg-red-50 text-[#b91c1c]" 
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className={`absolute left-0 top-3 bottom-3 w-1 bg-[#b91c1c] rounded-r-full transition-all duration-300 ${
+                      isActive ? "opacity-100" : "opacity-0"
+                    }`} />
+                    
+                    <span className={`transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"}`}>
+                      {item.icon}
+                    </span>
+                    
+                    <span className="tracking-tight whitespace-nowrap">
+                      {item.name}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
