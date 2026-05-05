@@ -303,12 +303,12 @@ const { data: rosterResponse, isLoading: loadingRoster, isError: rosterError } =
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+              {/* <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
                 <button onClick={() => setSelectedPositionId(null)} className={`px-6 py-4 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${!selectedPositionId ? 'bg-red-700 text-white' : 'bg-white text-slate-400'}`}>All Schools</button>
                 {processedData.schoolPositions.map((pos: any) => (
                   <button key={pos.id} onClick={() => setSelectedPositionId(pos.id)} className={`px-6 py-4 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${selectedPositionId === pos.id ? 'bg-red-700 text-white' : 'bg-white text-slate-400'}`}>{pos.name}</button>
                 ))}
-              </div>
+              </div> */}
             </div>
 
             {processedData.sections.map((section) => (
