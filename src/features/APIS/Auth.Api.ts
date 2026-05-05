@@ -49,7 +49,7 @@ export interface UserResponse {
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://online-voting-system-oq4p.onrender.com/api/auth/",
+    baseUrl: "https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api/auth/",
     prepareHeaders: (headers, { getState }) => {
       // First try Redux state
       let token = (getState() as any).auth.token;

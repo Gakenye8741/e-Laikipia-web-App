@@ -1,6 +1,6 @@
 import React from 'react';
 import { BarChart3, CheckCircle, Lock } from "lucide-react";
-import { MdVerifiedUser, MdSecurity, MdHistoryEdu, MdBallot } from "react-icons/md";
+import { MdVerifiedUser, MdHistoryEdu, MdBallot } from "react-icons/md";
 import { Navbar } from "../components/Navbar";
 
 const AboutPage = () => {

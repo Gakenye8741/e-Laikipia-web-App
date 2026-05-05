@@ -73,7 +73,7 @@ export const AllPositions = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([refetchPositions(), refetchElections()]);
-    setTimeout(() => setIsRefreshing(false), 1000); // Animation duration
+    setTimeout(() => setIsRefreshing(false), 1000); 
   };
 
   /* ================= FILTER LOGIC ================= */
@@ -102,20 +102,23 @@ export const AllPositions = () => {
         <div class="text-left font-sans p-2">
           <div class="mb-4">
             <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Position Name</label>
-            <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="e.g. Faculty Representative" />
+            <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="e.g. Secretary General" />
           </div>
           <div class="mb-4">
             <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Role Description</label>
-            <input id="description" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="Briefly describe responsibilities..." />
+            <input id="description" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="Spokes person of the student council" />
           </div>
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Administrative Tier</label>
-              <select id="tier" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none cursor-pointer hover:bg-slate-200 transition-all text-slate-500">${tierOptions}</select>
+              <select id="tier" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none cursor-pointer hover:bg-slate-200 transition-all text-slate-500" onchange="document.getElementById('school').disabled = this.value === 'university'; if(this.value === 'university') document.getElementById('school').value = ''">${tierOptions}</select>
             </div>
             <div>
               <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Assigned School</label>
-              <select id="school" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none cursor-pointer hover:bg-slate-200 transition-all text-slate-500">${schoolOptions}</select>
+              <select id="school" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none cursor-pointer hover:bg-slate-200 transition-all text-slate-500">
+                <option value="">N/A (University Wide)</option>
+                ${schoolOptions}
+              </select>
             </div>
           </div>
           <div>
@@ -135,11 +138,25 @@ export const AllPositions = () => {
         const tier = (document.getElementById("tier") as HTMLSelectElement).value;
         const school = (document.getElementById("school") as HTMLSelectElement).value;
         const election_id = (document.getElementById("election_id") as HTMLSelectElement).value;
-        if (!name || !description || !tier || !school || !election_id) {
-          Swal.showValidationMessage("Validation Error: All fields required");
+        
+        if (!name || !description || !tier || !election_id) {
+          Swal.showValidationMessage("Validation Error: Core fields required");
           return;
         }
-        return { name, description, tier, school, election_id };
+        
+        const payload: any = { name, description, tier, election_id };
+        // Logic fix: Tier university can be applied by any school (school is null/empty)
+        if (tier === "school") {
+            if (!school) {
+                Swal.showValidationMessage("Validation Error: School tier requires a specific school assignment");
+                return;
+            }
+            payload.school = school;
+        } else {
+            payload.school = null; // University positions are open to all
+        }
+        
+        return payload;
       },
     });
 
@@ -159,10 +176,27 @@ export const AllPositions = () => {
       title: '<b class="text-slate-800 uppercase italic">Modify Record</b>',
       html: `
         <div class="text-left font-sans p-2">
+          <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Position Name</label>
           <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" value="${p.name || ""}" />
+          
+          <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Role Description</label>
           <input id="description" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" value="${p.description || ""}" />
-          <select id="tier" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600">${tierOptions}</select>
-          <select id="school" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600">${schoolOptions}</select>
+          
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Tier</label>
+              <select id="tier" class="w-full bg-slate-100 border-none rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600" onchange="document.getElementById('school').disabled = this.value === 'university'; if(this.value === 'university') document.getElementById('school').value = ''">${tierOptions}</select>
+            </div>
+            <div>
+              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">School</label>
+              <select id="school" class="w-full bg-slate-100 border-none rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600" ${p.tier === 'university' ? 'disabled' : ''}>
+                <option value="">N/A (University Wide)</option>
+                ${schoolOptions}
+              </select>
+            </div>
+          </div>
+          
+          <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Election Link</label>
           <select id="election_id" class="w-full bg-slate-100 border-none rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600">${electionOptions}</select>
         </div>
       `,
@@ -176,7 +210,15 @@ export const AllPositions = () => {
         const tier = (document.getElementById("tier") as HTMLSelectElement).value;
         const school = (document.getElementById("school") as HTMLSelectElement).value;
         const election_id = (document.getElementById("election_id") as HTMLSelectElement).value;
-        return { positionId: p.id, name, description, tier, school, election_id };
+        
+        const payload: any = { positionId: p.id, name, description, tier, election_id };
+        if (tier === "school") {
+            payload.school = school;
+        } else {
+            payload.school = null;
+        }
+        
+        return payload;
       },
     });
 
@@ -314,8 +356,8 @@ export const AllPositions = () => {
                     <div key={p.id} className="p-7 hover:bg-red-50/30 transition-all group relative border-l-[6px] border-transparent hover:border-red-600">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex gap-2">
-                          <span className="px-3 py-1 rounded-full bg-red-100 text-red-600 text-[8px] font-black uppercase tracking-widest border border-red-200">{p.tier || "N/A"}</span>
-                          <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[8px] font-black uppercase tracking-widest border border-slate-200">{(p.school || "").replace(/_/g, " ") || "GENERAL"}</span>
+                          <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${p.tier === 'university' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-red-100 text-red-600 border-red-200'}`}>{p.tier || "N/A"}</span>
+                          <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[8px] font-black uppercase tracking-widest border border-slate-200">{p.tier === 'university' ? 'ALL SCHOOLS' : (p.school || "").replace(/_/g, " ")}</span>
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 transition-all flex gap-4">
                           <button onClick={() => handleEditPosition(p)} className="text-[10px] font-black text-slate-400 hover:text-red-600 uppercase tracking-tighter transition-colors flex items-center gap-1"><FaEdit /> Edit</button>

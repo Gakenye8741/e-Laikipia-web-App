@@ -4,8 +4,6 @@ import { Navbar } from "../components/Navbar";
 
 import { Fade,  } from "react-awesome-reveal"; // Add more animations if needed
 import HeroHomeSection from "../content-folders/Home/HeroHomeSection";
-import AnalyticsOverview from "../content-folders/Home/Analytics";
-
 export const Home = () => {
   return (
     <div>

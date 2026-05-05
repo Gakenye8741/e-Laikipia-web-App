@@ -15,7 +15,7 @@ export interface Candidate {
 export const candidatesApi = createApi({
   reducerPath: "candidatesApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api/candidates",
+    baseUrl: "https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api/candidates",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
       if (token) {

@@ -4,7 +4,7 @@ import withReactContent from "sweetalert2-react-content";
 import { PuffLoader } from "react-spinners";
 import { 
   FaUserPlus, FaSearch, FaSync, FaUserShield, FaUserGraduate, 
-  FaTrash, FaIdCard, FaTimesCircle, FaCheckCircle 
+  FaTrash, FaIdCard, FaTimesCircle, FaCheckCircle, FaLock 
 } from "react-icons/fa";
 import { MdOutlineVerifiedUser, MdAdminPanelSettings } from "react-icons/md";
 
@@ -17,6 +17,18 @@ import {
 import { toast } from "sonner";
 
 const MySwal = withReactContent(Swal);
+
+export const allowedRoles = [
+  "voter",
+  "admin",
+  "Dean_of_Science",
+  "Dean_of_Education",
+  "Dean_of_Business",
+  "Dean_of_Humanities_and_Developmental_Studies",
+  "Dean_of_TVET",
+  "Dean_of_Students",
+  "Accountants"
+] as const;
 
 export const AccountRegistry = () => {
   /* ================= API HOOKS ================= */
@@ -43,13 +55,32 @@ export const AccountRegistry = () => {
     const { value: formData } = await MySwal.fire({
       title: '<b class="text-slate-800 uppercase italic text-2xl tracking-tighter">Provision Identity</b>',
       html: `
-        <div class="text-left font-sans p-2">
-          <label class="text-[9px] font-black text-[#b91c1c] uppercase tracking-widest ml-1">Registration Number</label>
-          <input 
-            id="swal_reg_no" 
-            class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 uppercase" 
-            placeholder="e.g. STUDENT/00022" 
-          />
+        <div class="text-left font-sans p-2 space-y-4">
+          <div>
+            <label class="text-[9px] font-black text-[#b91c1c] uppercase tracking-widest ml-1">Registration/Staff Number</label>
+            <input 
+              id="swal_reg_no" 
+              class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 uppercase" 
+              placeholder="e.g. ADM/001 or STUDENT/00022" 
+            />
+          </div>
+          
+          <div>
+            <label class="text-[9px] font-black text-[#b91c1c] uppercase tracking-widest ml-1">Assign System Role</label>
+            <select id="swal_role" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600">
+              ${allowedRoles.map(role => `<option value="${role}">${role.replace(/_/g, ' ')}</option>`).join('')}
+            </select>
+          </div>
+
+          <div id="password_container">
+            <label class="text-[9px] font-black text-[#b91c1c] uppercase tracking-widest ml-1">Access Password</label>
+            <input 
+              id="swal_password" 
+              type="password"
+              class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600" 
+              placeholder="••••••••" 
+            />
+          </div>
         </div>
       `,
       showCancelButton: true,
@@ -57,35 +88,36 @@ export const AccountRegistry = () => {
       confirmButtonColor: '#b91c1c',
       customClass: { popup: 'rounded-[2.5rem]', confirmButton: 'rounded-xl text-[10px] font-black px-6 py-4' },
       preConfirm: () => {
-        const input = document.getElementById("swal_reg_no") as HTMLInputElement;
-        const val = input?.value?.trim();
-        if (!val) {
-          Swal.showValidationMessage("Registration Number is required");
-          return null;
+        const reg_no = (document.getElementById("swal_reg_no") as HTMLInputElement).value.trim();
+        const role = (document.getElementById("swal_role") as HTMLSelectElement).value;
+        const password = (document.getElementById("swal_password") as HTMLInputElement).value.trim();
+
+        if (!reg_no) return Swal.showValidationMessage("Registration/Staff Number is required");
+        
+        // Require password for privileged roles
+        if (role !== "voter" && !password) {
+            return Swal.showValidationMessage("Password is required for this role");
         }
-        return { reg_no: val }; 
+
+        return { reg_no, role, password }; 
       }
     });
 
     if (formData) {
       try {
-        // Execute Mutation
         await registerAccount(formData).unwrap();
         
-        // SUCCESS MODAL
         await MySwal.fire({
           icon: 'success',
           title: '<span class="text-slate-800 uppercase font-black italic">Identity Provisioned</span>',
-          html: `<p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ID: ${formData.reg_no} has been added to the registry.</p>`,
+          html: `<p class="text-xs font-bold text-slate-500 uppercase tracking-widest">ID: ${formData.reg_no} assigned as ${formData.role}</p>`,
           confirmButtonColor: '#1e293b',
           customClass: { popup: 'rounded-[2rem]' }
         });
 
         refetch();
       } catch (err: any) {
-        // ERROR MODAL (Extracting {"error": "..."} or {"message": "..."})
         const errorMessage = err?.data?.error || err?.data?.message || "Registry synchronization failed";
-        
         MySwal.fire({
           icon: 'error',
           title: '<span class="text-red-700 uppercase font-black italic">Registration Failed</span>',
@@ -169,8 +201,9 @@ export const AccountRegistry = () => {
 
                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase text-slate-700 cursor-pointer">
                   <option value="">All Roles</option>
-                  <option value="admin">Administrators</option>
-                  <option value="voter">Voters</option>
+                  {allowedRoles.map(role => (
+                    <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
+                  ))}
                </select>
             </div>
           </div>
@@ -190,12 +223,15 @@ export const AccountRegistry = () => {
                     <div key={user.id || user._id} className="p-7 hover:bg-red-50/30 transition-all group border-l-[6px] border-transparent hover:border-red-600">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${user.role === 'admin' ? 'bg-slate-900 text-white' : 'bg-red-50 text-red-600'}`}>
-                            {user.role === 'admin' ? <MdAdminPanelSettings size={22} /> : <FaUserGraduate size={20} />}
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${user.role !== 'voter' ? 'bg-slate-900 text-white' : 'bg-red-50 text-red-600'}`}>
+                            {user.role !== 'voter' ? <MdAdminPanelSettings size={22} /> : <FaUserGraduate size={20} />}
                           </div>
                           <div>
-                            <h3 className="text-sm font-black text-slate-900 uppercase italic tracking-tight">{user.reg_no}</h3>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{user.name || 'Account Not Initialized'}</p>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-black text-slate-900 uppercase italic tracking-tight">{user.reg_no}</h3>
+                                {user.role !== 'voter' && <FaLock className="text-[10px] text-slate-400" title="Password Protected" />}
+                            </div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{user.role.replace(/_/g, ' ')}</p>
                           </div>
                         </div>
 

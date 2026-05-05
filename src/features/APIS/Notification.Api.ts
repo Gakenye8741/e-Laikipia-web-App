@@ -18,7 +18,7 @@ interface NotificationsResponse {
 
 const baseQuery = fetchBaseQuery({
   // Backend Production URL
-  baseUrl: "https://online-voting-system-oq4p.onrender.com/api/notifications", 
+  baseUrl: "https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api/notifications", 
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
     if (token) {

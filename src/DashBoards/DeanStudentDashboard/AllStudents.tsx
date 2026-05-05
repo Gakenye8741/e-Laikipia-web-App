@@ -12,7 +12,7 @@ import { useUpdatePasswordMutation } from "../../features/APIS/Auth.Api";
 
 import "../adminDashboard/style.css";
 import { FaDeleteLeft } from "react-icons/fa6";
-import { FaKey, FaEdit, FaSearch, FaUserShield, FaUserGraduate, FaInfoCircle, FaSync, FaFilter, FaUniversity, FaCalendarAlt, FaEnvelope } from "react-icons/fa";
+import { FaKey, FaEdit, FaSearch, FaUserShield, FaUserGraduate, FaInfoCircle, FaSync, FaFilter, FaUniversity, FaCalendarAlt } from "react-icons/fa";
 
 const MySwal = withReactContent(Swal);
 
@@ -27,7 +27,7 @@ interface UserNode {
   expected_graduation?: string;
 }
 
-export const AllUsers = () => {
+export const AllStudents = () => {
   /* ================= API HOOKS ================= */
   const { data: allUsersData = { users: [] }, isLoading, error, refetch } = useGetAllUsersQuery(undefined);
   const [deleteUser] = useDeleteUserMutation();
@@ -44,8 +44,10 @@ export const AllUsers = () => {
   const itemsPerPage = 8;
 
   const admin = useSelector((state: any) => state.auth.user);
-  const adminName = admin?.name || "Admin";
+  const adminName = admin?.name || "User";
+  const isSuperAdmin = admin?.role === "admin"; // Check if the user is a real Admin
 
+  // Cast users array to our interface to satisfy ReactNode and Key types
   const usersArray = (allUsersData?.users || []) as UserNode[];
 
   /* ================= DYNAMIC FILTER OPTIONS ================= */
@@ -87,7 +89,7 @@ export const AllUsers = () => {
     setTimeout(() => setIsSpinning(false), 700);
   };
 
-  /* ================= MODAL HANDLERS (UNCHANGED) ================= */
+  /* ================= MODAL HANDLERS ================= */
   const handleViewDetails = (user: UserNode) => {
     MySwal.fire({
       title: `<span style="color: #991b1b; font-size: 14px; font-weight: 900; letter-spacing: 2px;">USER DATA SHEET</span>`,
@@ -124,6 +126,7 @@ export const AllUsers = () => {
   };
 
   const handleUpdatePassword = async (user: UserNode) => {
+    if (!isSuperAdmin) return; // Defensive check
     const { value: password } = await MySwal.fire({
       title: `<b style="color: #991b1b;">PASSWORD OVERRIDE</b>`,
       html: `
@@ -184,6 +187,7 @@ export const AllUsers = () => {
   };
 
   const handleEdit = async (user: UserNode) => {
+    if (!isSuperAdmin) return; // Defensive check
     const { value: formValues } = await MySwal.fire({
       title: `<b style="color: #991b1b;">EDIT IDENTITY</b>`,
       html: `
@@ -220,6 +224,7 @@ export const AllUsers = () => {
   };
 
   const handleDelete = async (userId: string) => {
+    if (!isSuperAdmin) return; // Defensive check
     const confirm = await MySwal.fire({
       title: "Purge Identity?",
       text: "This removal is permanent and irreversible.",
@@ -248,7 +253,7 @@ export const AllUsers = () => {
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <p className="text-[10px] font-black text-red-800 uppercase tracking-widest mb-1 flex items-center gap-2">
-              <span className="h-2 w-2 bg-red-600 rounded-full animate-pulse"></span> Terminal Session: {adminName}
+              <span className="h-2 w-2 bg-red-600 rounded-full animate-pulse"></span> Terminal Session: {adminName} ({admin?.role})
             </p>
             <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase italic">User <span className="text-red-800">Registry</span></h1>
           </div>
@@ -302,20 +307,18 @@ export const AllUsers = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-red-800 text-white">
-                  <th className="px-6 py-6 text-[11px] font-black uppercase tracking-widest italic">Identity</th>
-                  <th className="px-6 py-6 text-[11px] font-black uppercase tracking-widest italic text-center">Reg No</th>
-                  <th className="px-6 py-6 text-[11px] font-black uppercase tracking-widest italic">Email Node</th>
-                  <th className="px-6 py-6 text-[11px] font-black uppercase tracking-widest italic text-center">Class of</th>
-                  <th className="px-6 py-6 text-[11px] font-black uppercase tracking-widest italic">Clearance</th>
-                  <th className="px-6 py-6 text-[11px] font-black uppercase tracking-widest italic text-right">Commands</th>
+                  <th className="px-10 py-6 text-[11px] font-black uppercase tracking-widest italic">Identity</th>
+                  <th className="px-10 py-6 text-[11px] font-black uppercase tracking-widest italic">Reg No</th>
+                  <th className="px-10 py-6 text-[11px] font-black uppercase tracking-widest italic">Clearance</th>
+                  <th className="px-10 py-6 text-[11px] font-black uppercase tracking-widest italic text-right">Commands</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {paginatedUsers.length > 0 ? paginatedUsers.map((user) => (
                   <tr key={user.id as Key} className="hover:bg-red-50/50 transition-all group">
-                    <td className="px-6 py-6">
+                    <td className="px-10 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 min-w-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-red-800 group-hover:text-white transition-all">
+                        <div className="h-10 w-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-red-800 group-hover:text-white transition-all">
                           {user.role === 'admin' ? <FaUserShield /> : <FaUserGraduate />}
                         </div>
                         <div>
@@ -324,33 +327,30 @@ export const AllUsers = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-6 text-center">
+                    <td className="px-10 py-6">
                       <p className="text-[11px] font-black text-red-800">{user.reg_no as ReactNode}</p>
                     </td>
-                    <td className="px-6 py-6">
-                      <div className="flex items-center gap-2">
-                        <FaEnvelope className="text-slate-300 text-[10px]" />
-                        <p className="text-[11px] font-bold text-slate-500 lowercase">{user.email as ReactNode || 'not_linked'}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-6 text-center">
-                      <p className="text-[11px] font-black text-slate-700 bg-slate-100 inline-block px-3 py-1 rounded-lg uppercase">{user.expected_graduation as ReactNode || 'TBD'}</p>
-                    </td>
-                    <td className="px-6 py-6">
+                    <td className="px-10 py-6">
                       <span className="text-[10px] font-black text-slate-500 uppercase">{user.role as ReactNode}</span>
                     </td>
-                    <td className="px-6 py-6 text-right">
+                    <td className="px-10 py-6 text-right">
                        <div className="flex justify-end gap-2">
-                          <button onClick={() => handleViewDetails(user)} title="View Node" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaInfoCircle /></button>
-                          <button onClick={() => handleUpdatePassword(user)} title="Reset Key" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaKey /></button>
-                          <button onClick={() => handleEdit(user)} title="Edit Node" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaEdit /></button>
-                          <button onClick={() => handleDelete(user.id)} title="Purge Node" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaDeleteLeft /></button>
+                          <button onClick={() => handleViewDetails(user)} title="View Profile" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaInfoCircle /></button>
+                          
+                          {/* ONLY SHOW ADMIN BUTTONS IF LOGGED IN AS ADMIN */}
+                          {isSuperAdmin && (
+                            <>
+                              <button onClick={() => handleUpdatePassword(user)} title="Override Password" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaKey /></button>
+                              <button onClick={() => handleEdit(user)} title="Edit Identity" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaEdit /></button>
+                              <button onClick={() => handleDelete(user.id)} title="Purge Record" className="p-2.5 bg-white text-slate-300 hover:text-red-800 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaDeleteLeft /></button>
+                            </>
+                          )}
                        </div>
                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={6} className="px-10 py-20 text-center text-slate-400 font-black italic uppercase tracking-widest">No Identities Match These Matrix Parameters</td>
+                    <td colSpan={4} className="px-10 py-20 text-center text-slate-400 font-black italic uppercase tracking-widest">No Identities Match These Matrix Parameters</td>
                   </tr>
                 )}
               </tbody>
