@@ -43,8 +43,17 @@ export interface MyDelegateVoteResponse {
   };
 }
 
+export interface Delegate {
+  delegate_id: string;
+  name: string;
+  reg_no: string;
+  school: string;
+  coalition_id: string | null;
+}
+
 export interface DelegateRosterResponse {
-  delegates: Delegate[];
+  count: number;
+  data: Delegate[]; // This matches the "data" key in your JSON
 }
 
 export interface ExecutiveTally {

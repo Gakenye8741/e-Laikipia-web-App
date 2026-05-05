@@ -2,13 +2,14 @@ import { useState, useMemo } from "react";
 import { PuffLoader } from "react-spinners";
 import { 
   FaPlus, FaEdit, FaTrash, FaUsers, FaPalette, 
-  FaSearch, FaExternalLinkAlt, FaGlobe 
+  FaSearch, FaExternalLinkAlt, FaGlobe, FaUserTie, FaTimes 
 } from "react-icons/fa";
 import { 
   useGetCoalitionsByElectionQuery, 
   useCreateCoalitionMutation, 
   useUpdateCoalitionMutation, 
-  useDeleteCoalitionMutation 
+  useDeleteCoalitionMutation,
+  useGetCoalitionFullSlateQuery // Added for Slate view
 } from "../../features/APIS/CoalitionApi";
 import { useGetAllElectionsQuery } from "../../features/APIS/Election.Api";
 
@@ -17,8 +18,10 @@ export const AdminCoalitionManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoalition, setEditingCoalition] = useState<any>(null);
+  
+  // Slate View State
+  const [viewingSlateId, setViewingSlateId] = useState<string | null>(null);
 
-  // Form State
   const [formData, setFormData] = useState({
     name: "",
     acronym: "",
@@ -27,12 +30,16 @@ export const AdminCoalitionManager = () => {
     logo_url: ""
   });
 
-  // Queries & Mutations
   const { data: electionsData } = useGetAllElectionsQuery(undefined);
   const { data: coalitionsData, isLoading } = useGetCoalitionsByElectionQuery(selectedElection, {
     skip: !selectedElection,
   });
   
+  // Slate Query
+  const { data: slateData, isLoading: isLoadingSlate } = useGetCoalitionFullSlateQuery(viewingSlateId!, {
+    skip: !viewingSlateId,
+  });
+
   const [createCoalition] = useCreateCoalitionMutation();
   const [updateCoalition] = useUpdateCoalitionMutation();
   const [deleteCoalition] = useDeleteCoalitionMutation();
@@ -53,12 +60,19 @@ export const AdminCoalitionManager = () => {
       if (editingCoalition) {
         await updateCoalition({ id: editingCoalition.id, body: formData }).unwrap();
       } else {
-        await createCoalition({ electionId: selectedElection, ...formData }).unwrap();
+        // FIXED: Mapping to CreateCoalitionRequest structure
+        await createCoalition({ 
+          creatorCandidateId: "ADMIN_ACTION", // Or your admin ID
+          coalition: { 
+            ...formData, 
+            election_id: selectedElection // Map electionId here
+          } 
+        }).unwrap();
       }
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
-      alert("Action failed. Check admin permissions.");
+      alert("Action failed. Check API constraints.");
     }
   };
 
@@ -68,7 +82,7 @@ export const AdminCoalitionManager = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure? This will dissolve the coalition and remove all candidate affiliations.")) {
+    if (window.confirm("Dissolve this alliance? This will remove all member affiliations.")) {
       await deleteCoalition(id);
     }
   };
@@ -76,7 +90,7 @@ export const AdminCoalitionManager = () => {
   if (isLoading && selectedElection) return (
     <div className="flex flex-col justify-center items-center h-screen bg-[#F8FAFC]">
       <PuffLoader color="#b91c1c" size={60} />
-      <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Alliances...</p>
+      <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Syncing Alliances...</p>
     </div>
   );
 
@@ -118,10 +132,11 @@ export const AdminCoalitionManager = () => {
           </div>
         </div>
 
+        {/* Coalition Grid */}
         {!selectedElection ? (
           <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 p-20 text-center">
             <FaGlobe className="mx-auto text-slate-200 mb-4" size={50} />
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Please select an election to manage coalitions</p>
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Select an election context to manage alliances</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -134,25 +149,18 @@ export const AdminCoalitionManager = () => {
                       {c.logo_url ? <img src={c.logo_url} alt="logo" className="object-cover" /> : <FaUsers className="text-slate-300" />}
                     </div>
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => { setEditingCoalition(c); setFormData(c as any); setIsModalOpen(true); }}
-                        className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
-                      ><FaEdit /></button>
-                      <button 
-                        onClick={() => handleDelete(c.id)}
-                        className="p-2 text-slate-400 hover:text-red-600 transition-colors"
-                      ><FaTrash /></button>
+                      <button onClick={() => setViewingSlateId(c.id)} className="p-2 text-slate-400 hover:text-green-600 transition-colors"><FaExternalLinkAlt title="View Slate" /></button>
+                      <button onClick={() => { setEditingCoalition(c); setFormData(c as any); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><FaEdit /></button>
+                      <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><FaTrash /></button>
                     </div>
                   </div>
                   
                   <h3 className="text-xl font-black text-slate-900 leading-tight mb-1">{c.name}</h3>
-                  <p className="text-[10px] font-black text-red-600 uppercase tracking-tighter mb-4">{c.acronym || 'NO ACRONYM'}</p>
+                  <p className="text-[10px] font-black text-red-600 uppercase tracking-tighter mb-4">{c.acronym || 'ALLIANCE'}</p>
                   
-                  <div className="space-y-3">
-                    <div className="p-3 bg-slate-50 rounded-xl">
-                      <p className="text-[9px] font-black text-slate-400 uppercase mb-1 italic">Motto/Slogan</p>
-                      <p className="text-xs font-bold text-slate-600 italic">"{c.slogan || 'Unity in Diversity'}"</p>
-                    </div>
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1 italic">Motto</p>
+                    <p className="text-xs font-bold text-slate-600 italic">"{c.slogan || 'No Slogan Set'}"</p>
                   </div>
                 </div>
               </div>
@@ -160,6 +168,44 @@ export const AdminCoalitionManager = () => {
           </div>
         )}
       </div>
+
+      {/* Coalition Slate View Modal */}
+      {viewingSlateId && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 uppercase italic">Coalition <span className="text-red-700">Slate</span></h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Member Lineup & Positions</p>
+              </div>
+              <button onClick={() => setViewingSlateId(null)} className="h-10 w-10 flex items-center justify-center rounded-full bg-white shadow-md text-slate-400 hover:text-red-600"><FaTimes /></button>
+            </div>
+
+            <div className="p-8 overflow-y-auto flex-1">
+              {isLoadingSlate ? (
+                <div className="py-20 text-center"><PuffLoader color="#b91c1c" className="mx-auto" /></div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {slateData?.coalition.candidates.map((member) => (
+                    <div key={member.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="h-12 w-12 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center">
+                        {member.photo_url ? <img src={member.photo_url} alt="" className="object-cover h-full w-full" /> : <FaUserTie className="text-slate-300" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900 uppercase leading-none">{member.name}</p>
+                        <p className="text-[9px] font-bold text-red-600 uppercase mt-1 tracking-wider">{member.position.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {slateData?.coalition.candidates.length === 0 && (
+                    <p className="col-span-2 text-center py-10 text-[10px] font-black uppercase text-slate-400 italic">No candidates have joined this alliance yet.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Admin CRUD Modal */}
       {isModalOpen && (
@@ -171,59 +217,14 @@ export const AdminCoalitionManager = () => {
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-900 text-xl">×</button>
             </div>
-            
             <form onSubmit={handleSubmit} className="p-8 space-y-4">
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">Coalition Name</label>
-                <input 
-                  type="text" required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">Acronym</label>
-                  <input 
-                    type="text"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold outline-none"
-                    value={formData.acronym}
-                    onChange={(e) => setFormData({...formData, acronym: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">Brand Color</label>
-                  <input 
-                    type="color"
-                    className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-xl p-1"
-                    value={formData.color_code}
-                    onChange={(e) => setFormData({...formData, color_code: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">Logo URL</label>
-                <input 
-                  type="text"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold outline-none"
-                  value={formData.logo_url}
-                  onChange={(e) => setFormData({...formData, logo_url: e.target.value})}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 block mb-2">Official Slogan</label>
-                <textarea 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold outline-none resize-none h-24"
-                  value={formData.slogan}
-                  onChange={(e) => setFormData({...formData, slogan: e.target.value})}
-                />
-              </div>
-
-              <button className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase hover:bg-red-700 transition-all shadow-lg mt-4">
+              {/* Form inputs remain the same as your previous logic */}
+              <input type="text" placeholder="Name" required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              <input type="text" placeholder="Acronym" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold" value={formData.acronym} onChange={(e) => setFormData({...formData, acronym: e.target.value})} />
+              <input type="color" className="w-full h-12 bg-slate-50 rounded-xl p-1" value={formData.color_code} onChange={(e) => setFormData({...formData, color_code: e.target.value})} />
+              <input type="text" placeholder="Logo URL" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold" value={formData.logo_url} onChange={(e) => setFormData({...formData, logo_url: e.target.value})} />
+              <textarea placeholder="Slogan" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-bold h-24" value={formData.slogan} onChange={(e) => setFormData({...formData, slogan: e.target.value})} />
+              <button className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase hover:bg-red-700 shadow-lg transition-all">
                 {editingCoalition ? 'Save Changes' : 'Launch Coalition'}
               </button>
             </form>

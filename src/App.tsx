@@ -10,10 +10,6 @@ import { Analytics } from './DashBoards/adminDashboard/Analytics';
 import { AllUsers } from './DashBoards/adminDashboard/AllUsers';
 import ContactForm from './pages/Contact';
 import RootLayout from './DashBoards/dashboardDesign/RootLayout';
-import EmailVerification from './pages/EmailVerification';
-import { ForgotPassword } from './pages/ForgotPassword';
-import { ResetPassword } from './pages/PasswordReset';
-import AdminUserProfile from './DashBoards/adminDashboard/AdminUserProfile';
 import { Toaster } from 'react-hot-toast';
 import { AllElections } from './DashBoards/adminDashboard/AllElections';
 import { AllPositions } from './DashBoards/adminDashboard/AllPositions';
@@ -52,9 +48,9 @@ function App() {
         { path: '/about', element: <AboutPage /> },
         { path: '/login', element: <Login /> },
         { path: '/contact', element: <ContactForm /> },
-        { path: "/email-verification", element: <EmailVerification />, errorElement: <Error /> },
-        { path: "/forgot-password",element: <ForgotPassword />,errorElement: <Error /> },
-        { path: "/reset-password/:token",element: <ResetPassword />,errorElement: <Error />},
+        // { path: "/email-verification", element: <EmailVerification />, errorElement: <Error /> },
+        // { path: "/forgot-password",element: <ForgotPassword />,errorElement: <Error /> },
+        // { path: "/reset-password/:token",element: <ResetPassword />,errorElement: <Error />},
         { path: "/developer" , element: <DeveloperPage />,errorElement: <Error />},
         { path: "/results" , element: <ResultsScreen />,errorElement: <Error />},
   
@@ -75,7 +71,7 @@ function App() {
         { path: 'Manage-Applications', element: <CandidateApplication/>},
         { path: 'Manage-Users', element: <AllUsers /> },
         { path: 'AllNotifications', element: <NotificationManager/>} ,
-        { path: 'adminprofile', element: <AdminUserProfile /> },
+        // { path: 'adminprofile', element: <AdminUserProfile /> },
         { path: 'Manage-Candidates', element: <AdminCandidateManager /> },
         { path: "create-accounts" , element: <AccountRegistry />},
         { path: "Manage-Appeals" , element: <AdminAppeals />},
@@ -100,7 +96,7 @@ function App() {
         { path: 'Manage-Applications', element: <CandidateApplicationDeansDashBoard/>},
         { path: 'Manage-Users', element: <AllStudents /> },
         { path: 'AllNotifications', element: <NotificationManager/>} ,
-        { path: 'adminprofile', element: <AdminUserProfile /> },
+        // { path: 'adminprofile', element: <AdminUserProfile /> },
         { path: 'Manage-Candidates', element: <CandidateManager /> },
         { path: 'Manage-Appeals', element: <DeansAppeals /> },
         
@@ -122,7 +118,7 @@ function App() {
         { path: 'Manage-Applications', element: <CandidateApplicationSchoolDeans/>},
         { path: 'Manage-Users', element: <AllSchoolStudents /> },
         { path: 'Manage-Appeals', element: <SchoolDeansAppeals/>} ,
-        { path: 'adminprofile', element: <AdminUserProfile /> },
+        // { path: 'adminprofile', element: <AdminUserProfile /> },
          { path: 'Manage-Candidates', element: <CandidateManager /> },
         
         
@@ -144,7 +140,7 @@ function App() {
         { path: 'Manage-Appeals', element: <AccountsAppeals/>},
         { path: 'Manage-Users', element: <AllStudents /> },
         { path: 'AllNotifications', element: <NotificationManager/>} ,
-        { path: 'adminprofile', element: <AdminUserProfile /> },
+        // { path: 'adminprofile', element: <AdminUserProfile /> },
          { path: 'Manage-Candidates', element: <CandidateManager /> },
         
         
