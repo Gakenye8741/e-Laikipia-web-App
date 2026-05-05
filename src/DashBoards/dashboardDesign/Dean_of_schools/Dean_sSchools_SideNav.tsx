@@ -6,40 +6,57 @@ import {
   GraduationCap,
   ShieldCheck,
   FileBadge,
-  BellRing,
-  CheckCircle2,
   UserCheck,
   User2,
   LibraryBig,
-  GavelIcon,
+  Gavel,
+  LayoutDashboard,
+  ClipboardCheck,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { MdBallot } from "react-icons/md";
 import { clearCredentials } from "../../../features/Auth/AuthSlice";
 
+// --- TYPES & INTERFACES ---
 interface NavItem {
   name: string;
   path: string;
   icon: React.ReactNode;
 }
 
+interface NavGroup {
+  groupName: string;
+  items: NavItem[];
+}
+
 interface DeanSchoolsSideNavProps {
   onNavItemClick?: () => void;
 }
 
-/**
- * 🎓 DEAN OF SCHOOLS NAVIGATION
- * Focused on: School-level Oversight, Academic Integrity, and Election Registry.
- */
-const navItems: NavItem[] = [
-  { name: "Academic Summary", path: "Analytics", icon: <GitGraph size={20} /> },
-  { name: "Faculty Users", path: "manage-users", icon: <User2 size={20} /> },
-  { name: "Candidacy Review", path: "Manage-Applications", icon: <FileBadge size={20} /> },
-  { name: "Manage Appeals", path: "Manage-Appeals", icon: <GavelIcon size={20} /> },
-  { name: "Certified Aspirants", path: "Manage-Candidates", icon: <UserCheck size={20} /> },
-  { name: "School Elections", path: "AllElections", icon: <LibraryBig size={20} /> },
-  { name: "Position Registry", path: "Manage-positions", icon: <MdBallot size={20} /> },
+const navGroups: NavGroup[] = [
+  {
+    groupName: "Faculty Oversight",
+    items: [
+      { name: "Academic Summary", path: "Analytics", icon: <GitGraph size={18} /> },
+      { name: "Faculty Users", path: "manage-users", icon: <User2 size={18} /> },
+    ],
+  },
+  {
+    groupName: "Candidacy & Integrity",
+    items: [
+      { name: "Candidacy Review", path: "Manage-Applications", icon: <FileBadge size={18} /> },
+      { name: "Certified Aspirants", path: "Manage-Candidates", icon: <UserCheck size={18} /> },
+      { name: "Manage Appeals", path: "Manage-Appeals", icon: <Gavel size={18} /> },
+    ],
+  },
+  {
+    groupName: "Registry Governance",
+    items: [
+      { name: "School Elections", path: "AllElections", icon: <LibraryBig size={18} /> },
+      { name: "Position Registry", path: "Manage-positions", icon: <MdBallot size={18} /> },
+    ],
+  },
 ];
 
 export const DeanSchoolsSideNav: React.FC<DeanSchoolsSideNavProps> = ({ onNavItemClick }) => {
@@ -55,7 +72,12 @@ export const DeanSchoolsSideNav: React.FC<DeanSchoolsSideNavProps> = ({ onNavIte
   };
 
   return (
-    <aside className="h-full w-full flex flex-col bg-white text-slate-600 overflow-hidden border-r border-slate-100">
+    /**
+     * UPDATED FOR FIXED NAVBAR:
+     * 'fixed' position with 'top-16' (adjust top-16 to match your navbar height)
+     * 'w-72' or similar width ensures layout consistency
+     */
+    <aside className="fixed left-0 top-16 bottom-0 w-72 flex flex-col bg-white text-slate-600 border-r border-slate-100 z-40 overflow-hidden">
       
       {/* 🏛️ IDENTITY: OFFICE OF THE DEAN OF SCHOOLS */}
       <div className="p-8 pb-6">
@@ -74,38 +96,45 @@ export const DeanSchoolsSideNav: React.FC<DeanSchoolsSideNavProps> = ({ onNavIte
         </div>
       </div>
 
-      {/* 🧭 NAVIGATION SECTION */}
-      <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto custom-scrollbar">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={onNavItemClick}
-            className={({ isActive }) =>
-              `flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-200 group relative font-bold text-sm ${
-                isActive 
-                  ? "bg-red-50 text-[#b91c1c]" 
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {/* Active Indicator Line */}
-                <span className={`absolute left-0 top-4 bottom-4 w-1 bg-[#b91c1c] rounded-r-full transition-all duration-300 ${
-                  isActive ? "opacity-100" : "opacity-0"
-                }`} />
-                
-                <span className={`group-hover:scale-110 transition-transform duration-200 ${isActive ? "text-[#b91c1c]" : "text-slate-400 group-hover:text-slate-800"}`}>
-                  {item.icon}
-                </span>
-                
-                <span className="tracking-tight">
-                  {item.name}
-                </span>
-              </>
-            )}
-          </NavLink>
+      {/* 🧭 NAVIGATION SECTION - Internal Scrollable */}
+      <nav className="flex-1 px-4 py-2 space-y-6 overflow-y-auto custom-scrollbar">
+        {navGroups.map((group) => (
+          <div key={group.groupName} className="space-y-1">
+            <h5 className="px-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2">
+              {group.groupName}
+            </h5>
+            
+            {group.items.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onNavItemClick}
+                className={({ isActive }) =>
+                  `flex items-center gap-3.5 px-5 py-3 rounded-xl transition-all duration-200 group relative font-bold text-[13px] ${
+                    isActive 
+                      ? "bg-red-50 text-[#b91c1c]" 
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className={`absolute left-0 top-3 bottom-3 w-1 bg-[#b91c1c] rounded-r-full transition-all duration-300 ${
+                      isActive ? "opacity-100" : "opacity-0"
+                    }`} />
+                    
+                    <span className={`transition-transform duration-200 ${isActive ? "text-[#b91c1c] scale-110" : "text-slate-400 group-hover:scale-110 group-hover:text-slate-800"}`}>
+                      {item.icon}
+                    </span>
+                    
+                    <span className="tracking-tight whitespace-nowrap">
+                      {item.name}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
