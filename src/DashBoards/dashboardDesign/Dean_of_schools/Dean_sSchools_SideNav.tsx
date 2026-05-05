@@ -38,7 +38,7 @@ const navGroups: NavGroup[] = [
   {
     groupName: "Faculty Oversight",
     items: [
-      { name: "Academic Summary", path: "Analytics", icon: <GitGraph size={18} /> },
+      { name: "Election Summary", path: "Analytics", icon: <GitGraph size={18} /> },
       { name: "Faculty Users", path: "manage-users", icon: <User2 size={18} /> },
     ],
   },
