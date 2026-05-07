@@ -13,6 +13,7 @@ import { votesApi } from "../features/APIS/Vote.Api";
 import { coalitionApi } from "../features/APIS/CoalitionApi";
 import { delegatesApi } from "../features/APIS/Delegate.Api";
 import { appealsApi } from "../features/APIS/Appeals.Api";
+import { adminApi } from "../features/APIS/Admin.Apis";
 
 
 // Create Persist Configuration for auth Slice
@@ -39,12 +40,13 @@ export const store = configureStore({
         [coalitionApi.reducerPath]: coalitionApi.reducer,
         [delegatesApi.reducerPath]: delegatesApi.reducer,
         [appealsApi.reducerPath]: appealsApi.reducer,
+        [adminApi.reducerPath]:  adminApi.reducer,
         auth: persistedAuthReducer,
     },
     middleware: (getDefaultMiddleware)=>
         getDefaultMiddleware({
             serializableCheck: false
-        }).concat(authApi.middleware,electionApi.middleware,applicationApi.middleware, positionApi.middleware,userApi.middleware,notificationApi.middleware,candidatesApi.middleware, votesApi.middleware, coalitionApi.middleware, delegatesApi.middleware,appealsApi.middleware)
+        }).concat(authApi.middleware,electionApi.middleware,applicationApi.middleware, positionApi.middleware,userApi.middleware,notificationApi.middleware,candidatesApi.middleware, votesApi.middleware, coalitionApi.middleware, delegatesApi.middleware,appealsApi.middleware,adminApi.middleware)
 })
 
 export const persister = persistStore(store);

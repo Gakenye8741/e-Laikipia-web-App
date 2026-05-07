@@ -35,8 +35,10 @@ import { AccountsAppeals } from './DashBoards/AccountsDashboard/ManageAppeals';
 import { DeansAppeals } from './DashBoards/DeanStudentDashboard/ManageAppeals';
 import { SchoolDeansAppeals } from './DashBoards/SchoolDeansDashboard/Appeal';
 import { CandidateManager } from './DashBoards/DeanStudentDashboard/Candidates';
-import { AllVotesAudit } from './DashBoards/adminDashboard/AllVotes';
+
 import { AdminCoalitionManager } from './DashBoards/adminDashboard/AllCoalition';
+import { AllVotesAudit } from './DashBoards/adminDashboard/AllVotes';
+
 
 function App() {
   const Router = createBrowserRouter([

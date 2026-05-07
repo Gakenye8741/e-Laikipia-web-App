@@ -327,7 +327,7 @@ const { data: rosterResponse, isLoading: loadingRoster, isError: rosterError } =
                     return (
                       <motion.div layout key={cand.candidate_id} className={`group bg-white p-6 rounded-3xl border transition-all relative ${isWinner ? 'border-amber-200 shadow-xl ring-1 ring-amber-100' : 'border-slate-100'}`}>
                         {/* RANKING BADGES - Stays absolute but we added padding-right to the container below */}
-                        <div className="absolute top-4 right-11 z-10">
+                        <div className="absolute top-4 right-13 z-10">
                           {isWinner ? (
                             <span className="flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ring-1 ring-amber-200">
                               <Star size={10} className="fill-amber-700" /> Platform Lead
@@ -337,7 +337,7 @@ const { data: rosterResponse, isLoading: loadingRoster, isError: rosterError } =
                               Runner Up
                             </span>
                           ) : (
-                            <span className="text-[9px] font-black text-slate-300 uppercase">RANK{idx + 1}</span>
+                            <span className="text-[9px] font-black text-slate-700 uppercase underline">RANK {idx + 1}</span>
                           )}
                         </div>
 
@@ -354,14 +354,14 @@ const { data: rosterResponse, isLoading: loadingRoster, isError: rosterError } =
                             </div>
                             <div className="pr-4">
                               <h4 className="text-base font-black text-slate-900 break-words">{cand.candidate_name}</h4>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase">{cand.coalition_name}</p>
+                              <p className="text-[10px] font-bold text-slate-700 uppercase">{cand.coalition_name}</p>
                             </div>
                           </div>
 
                           {/* Vote Tally - Pushed down slightly and given margin to avoid badge overlap */}
                           <div className="text-right mt-6 sm:mt-8 md:mt-0 min-w-[80px]">
                             <p className={`text-xl font-black ${isWinner ? 'text-amber-600' : 'text-slate-900'}`}>{Number(cand.votes_count).toLocaleString()}</p>
-                            <p className="text-[9px] font-bold text-slate-400">{percentage.toFixed(1)}%</p>
+                            <p className="text-[9px] font-bold text-slate-700">{percentage.toFixed(1)}%</p>
                           </div>
                         </div>
 
