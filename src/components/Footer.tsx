@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">
-                  E-Laikipia <span className="text-red-700 text-sm not-italic align-top">VOTE</span>
+                   <span className="text-red-700 text-sm not-italic align-top">SECURE VOTE APP</span>
                 </h3>
               </div>
             </div>

@@ -57,7 +57,7 @@ export const Navbar = () => {
   useEffect(() => {
     const typed = new Typed(typedRef.current, {
       strings: [
-        "LAIKIPIA E-VOTE",
+        "SECURE-VOTE APP",
         "SECURE REGISTRY",
         "BLOCKCHAIN LEDGER"
       ],
