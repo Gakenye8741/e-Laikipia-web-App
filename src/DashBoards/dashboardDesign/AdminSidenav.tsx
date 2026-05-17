@@ -71,7 +71,7 @@ const navGroups: NavGroup[] = [
   {
     groupName: "Governance",
     items: [
-      { name: "Manage Votes", path: "Manage-Votes", icon: <History size={18} /> },
+      { name: "Audit Votes", path: "Manage-Votes", icon: <History size={18} /> },
       { name: "Notifications", path: "AllNotifications", icon: <Megaphone size={18} /> },
     ],
   },
