@@ -66,7 +66,7 @@ const Login = () => {
           <div className="mt-8 text-center z-10">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">LU E-VOTING SYSTEM</h1>
             <p className="text-slate-500 font-medium max-w-xs mt-2">
-              Secure, transparent, and reliable digital balloting for Laikipia University.
+              Secure, transparent, and reliable digital balloting for Kenyan University.
             </p>
           </div>
         </div>

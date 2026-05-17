@@ -36,7 +36,7 @@ const AboutPage = () => {
     {
       icon: <Lock size={14}/>,
       title: "Blockchain Anchoring",
-      description: "Unlike traditional databases that can be edited by administrators, Laikipia E-Vote utilizes the Ethereum Sepolia Testnet. Every cast ballot generates a unique cryptographic hash, ensuring that your vote remains exactly as you cast it.",
+      description: "Unlike traditional databases that can be edited by administrators, secure Vote APP utilizes the Ethereum Sepolia Testnet. Every cast ballot generates a unique cryptographic hash, ensuring that your vote remains exactly as you cast it.",
       highlight: "Ethereum Sepolia Testnet"
     },
     {
@@ -71,7 +71,7 @@ const AboutPage = () => {
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase italic">
-                About <span className="text-red-700">Laikipia E-Vote</span>
+                About <span className="text-red-700">Secure-Vote App</span>
               </h1>
             </div>
           </header>
@@ -100,7 +100,7 @@ const AboutPage = () => {
                 <div className="space-y-4 pt-4 border-t border-slate-100">
                   <h2 className="text-[11px] font-black text-red-700 uppercase tracking-[0.2em]">Our Core Mission</h2>
                   <p className="text-xs font-bold text-slate-500 leading-relaxed italic">
-                    "To digitize the democratic process at Laikipia University through immutable blockchain technology and transparent registry management."
+                    "To digitize the democratic process at Kenyan University through immutable blockchain technology and transparent registry management."
                   </p>
                   
                   <div className="pt-4 space-y-3">
@@ -164,7 +164,7 @@ const AboutPage = () => {
                     </div>
                     <div className="mt-8">
                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em]">
-                        © 2026 E-Laikipia Vote
+                        © 2026 SECURE VOTE APP
                       </p>
                     </div>
                   </div>

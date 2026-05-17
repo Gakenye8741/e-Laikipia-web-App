@@ -187,7 +187,7 @@ const HeroHomeSection = () => {
           <div className="lg:col-span-7 space-y-12 text-black">
             <div className="space-y-6">
               <div className="inline-block">
-                <TrueFocus sentence="LAIKIPIA E-VOTE" blurAmount={3} borderColor="#b91c1c" />
+                <TrueFocus sentence="SECURE-VOTE APP" blurAmount={3} borderColor="#b91c1c" />
               </div>
               <h1 className="text-5xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[0.9] uppercase italic">
                 {userRole === "Voter" ? "Hello Voter," : "Hello,"}<br />

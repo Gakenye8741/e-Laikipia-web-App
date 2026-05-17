@@ -21,7 +21,7 @@ const ContactPage = () => {
     { 
       icon: <Mail size={18} className="text-red-700" />, 
       label: "Official Email", 
-      value: "cislu@laikipia.ac.ke",
+      value: "secure.ac.ke",
       sub: "General Inquiries"
     },
     { 
@@ -92,7 +92,7 @@ const ContactPage = () => {
                 <div className="pt-4 border-t border-slate-100">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-700">
                     <Globe size={14} className="text-emerald-500" />
-                    <span>E-Laikipia Vote: <span className="text-emerald-600">Online</span></span>
+                    <span>Secure Vote App: <span className="text-emerald-600">Online</span></span>
                   </div>
                 </div>
               </div>
@@ -177,7 +177,7 @@ const ContactPage = () => {
                     </p>
                   </div>
                   <p className="text-[8px] font-bold text-slate-400 max-w-md mx-auto leading-relaxed uppercase tracking-tighter">
-                    Messages are logged into the system registry. A technical agent from the E-Laikipia Vote  // Assigned ICT staff will respond within 24 operational hours.
+                    Messages are logged into the system registry. A technical agent from the Secure Vote  // Assigned ICT staff will respond within 24 operational hours.
                   </p>
                 </footer>
               </div>
