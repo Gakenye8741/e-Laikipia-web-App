@@ -38,6 +38,7 @@ import { CandidateManager } from './DashBoards/DeanStudentDashboard/Candidates';
 
 import { AdminCoalitionManager } from './DashBoards/adminDashboard/AllCoalition';
 import { AllVotesAudit } from './DashBoards/adminDashboard/AllVotes';
+import { SecureVoteDownload } from './Laikipia App Download';
 
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
         // { path: "/reset-password/:token",element: <ResetPassword />,errorElement: <Error />},
         { path: "/developer" , element: <DeveloperPage />,errorElement: <Error />},
         { path: "/results" , element: <ResultsScreen />,errorElement: <Error />},
+        { path: "/download" ,element: <SecureVoteDownload/>, errorElement : <Error/>}
   
       ],
     },

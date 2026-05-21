@@ -17,7 +17,8 @@ import {
   School,
   UserX,
   Wallet,
-  BarChart3 // Added for Results icon
+  BarChart3, // Added for Results icon
+  DownloadIcon
 } from "lucide-react";
 
 import Typed from "typed.js";
@@ -107,6 +108,7 @@ export const Navbar = () => {
               <li><Link className={`${isActive("/about")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/about"><Info size={14} /> About</Link></li>
               <li><Link className={`${isActive("/contact")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/contact"><Phone size={14} /> Contact</Link></li>
               <li><Link className={`${isActive("/developer")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/developer"><Code size={14} /> Developer</Link></li>
+              <li><Link className={`${isActive("/download")} hover:text-[#b91c1c] transition-colors flex items-center gap-2`} to="/download"><DownloadIcon size={14} /> Download App</Link></li>
             </ul>
           </div>
 
@@ -129,7 +131,7 @@ export const Navbar = () => {
                           : isSchoolDean 
                             ? `Dean: ${assignedSchool}` 
                             : userRole === "Dean_of_Students" 
-                              ? "Students Authority" 
+                              ? "Students Dean" 
                               : "System Admin"}
                     </p>
                     <p className="text-sm font-black text-slate-900 uppercase italic">{Name}</p>

@@ -6,7 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../features/Auth/AuthSlice';
 import { useState } from 'react';
-import { Eye, EyeOff, User, Lock } from 'lucide-react'; // Added icons for inputs
+import { Eye, EyeOff, User, Lock } from 'lucide-react'; 
 import { authApi } from '../features/APIS/Auth.Api';
 
 interface LoginDetails {
@@ -53,26 +53,30 @@ const Login = () => {
       <Toaster richColors position="top-right" />
       <Navbar />
       
-      <main className="grid grid-cols-1 md:grid-cols-2 min-h-[calc(100vh-64px)] transition-colors duration-300">
+      <main className="grid grid-cols-1 md:grid-cols-2 min-h-[calc(100vh-64px)]">
         
-        {/* Left Side: Branding */}
-        <div className="hidden md:flex flex-col items-center justify-center bg-white border-r border-slate-200 p-12 relative overflow-hidden">
-          <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-50" />
-          <img
-            src={loginImage}
-            alt="Laikipia University Logo"
-            className="w-3/4 max-w-sm h-auto object-contain z-10 drop-shadow-md"
-          />
-          <div className="mt-8 text-center z-10">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">LU E-VOTING SYSTEM</h1>
-            <p className="text-slate-500 font-medium max-w-xs mt-2">
-              Secure, transparent, and reliable digital balloting for Kenyan University.
+        {/* Left Side: Image completely occupying half the page */}
+        <div 
+          className="hidden md:block w-full h-full relative border-r border-slate-200"
+          style={{
+            backgroundImage: `url(${loginImage})`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '85%', // Fills up the container maximum space safely without clipping edges
+            backgroundColor: '#ffffff' // Keeps background matching the image canvas
+          }}
+        >
+          {/* Subtle overlay shading/text at the bottom of the half-page banner */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/80 to-transparent p-12 pt-32 text-center">
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">SECURE-VOTE PLATFORM</h1>
+            <p className="text-slate-500 font-medium max-w-xs mx-auto mt-2 text-sm">
+              Secure, transparent, and decentralized biometric balloting system for Laikipia University.
             </p>
           </div>
         </div>
 
         {/* Right Side: Auth Form */}
-        <div className="flex items-center justify-center p-6 sm:p-12">
+        <div className="flex items-center justify-center p-6 sm:p-12 bg-slate-50 md:bg-white">
           <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-8 w-full max-w-md border border-slate-100 relative">
             {/* Header Accent Line */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-[#D32F2F] rounded-b-full" />
@@ -81,7 +85,7 @@ const Login = () => {
               <h2 className="text-3xl font-black text-slate-900 tracking-tight italic">
                 WELCOME <span className="text-[#D32F2F]">BACK</span>
               </h2>
-              <p className="text-slate-500 text-sm mt-1">Please enter your student credentials</p>
+              <p className="text-slate-500 text-sm mt-1">Please enter your Admin credentials</p>
             </header>
 
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
