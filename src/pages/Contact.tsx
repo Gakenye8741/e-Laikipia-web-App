@@ -1,191 +1,209 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageSquare, Globe, ShieldCheck } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageSquare, Globe, AlertTriangle } from "lucide-react";
 import { MdSupportAgent, MdAlternateEmail, MdOutlineContactSupport } from "react-icons/md";
 import { Navbar } from "../components/Navbar";
-import { toast } from "sonner";
+import { Footer } from "../components/Footer";
 
 const ContactPage = () => {
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "Blockchain Verification Issues",
+    message: ""
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    // Simulating a registry sync
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Message Transmitted to Registry");
-    }, 1500);
+    // Submissions disabled due to dummy/non-functional state
   };
 
   const contactMethods = [
     { 
-      icon: <Mail size={18} className="text-red-700" />, 
+      icon: <Mail size={18} className="text-red-600" />, 
       label: "Official Email", 
-      value: "secure.ac.ke",
+      value: "support@laikipia.ac.ke",
       sub: "General Inquiries"
     },
     { 
-      icon: <Phone size={18} className="text-red-700" />, 
+      icon: <Phone size={18} className="text-red-600" />, 
       label: "Support Line", 
       value: "+254 700 000 000",
       sub: "Technical Emergencies"
     },
     { 
-      icon: <MapPin size={18} className="text-red-700" />, 
+      icon: <MapPin size={18} className="text-red-600" />, 
       label: "Physical Office", 
-      value: "Electrol Commission // Computing and informatics",
+      value: "Computing & Informatics Dept",
       sub: "Main Campus, Nyahururu"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <Navbar />
-      
-      <main className="p-4 md:p-8 pt-24 lg:pt-32 font-sans">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-red-600 selection:text-white flex flex-col justify-between">
+      <div>
+        <Navbar />
+        
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
           
-          {/* Header Section */}
-          <header className="mb-10 text-center lg:text-left flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 rounded-full mb-3 border border-red-100">
-                <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse"></span>
-                <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">
-                  Communication center
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase italic">
-                Support <span className="text-red-700">Registry</span>
-              </h1>
-            </div>
-
+          {/* HEADER SECTION */}
+          <header className="mb-12">
+            <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+              Support & <span className="text-red-600">Contact</span>
+            </h1>
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Sidebar: Official Channels */}
+            {/* SIDEBAR: CONTACT METHODS */}
             <aside className="lg:col-span-4">
-              <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-xl shadow-slate-200/50 sticky top-28 space-y-8">
-                <div className="p-5 bg-red-50 rounded-[1.5rem] flex items-center justify-center">
-                  <MdSupportAgent className="text-red-700 text-5xl" />
+              <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm sticky top-28 space-y-8">
+                <div className="p-6 bg-red-50 rounded-2xl flex items-center justify-center border border-red-100">
+                  <MdSupportAgent className="text-red-600 text-5xl" />
                 </div>
 
                 <div className="space-y-6">
                   {contactMethods.map((method, i) => (
-                    <div key={i} className="group border-b border-slate-50 pb-4 last:border-0">
-                      <div className="flex items-center gap-3 mb-1">
+                    <div key={i} className="group border-b border-slate-100 pb-5 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-2.5 mb-1">
                         {method.icon}
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                           {method.label}
                         </p>
                       </div>
-                      <p className="text-sm font-black text-slate-900 ml-7 group-hover:text-red-700 transition-colors">
+                      <p className="text-sm font-extrabold text-slate-900 ml-7 group-hover:text-red-600 transition-colors">
                         {method.value}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 ml-7 italic">
+                      <p className="text-xs text-slate-500 ml-7">
                         {method.sub}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <div className="pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-700">
-                    <Globe size={14} className="text-emerald-500" />
-                    <span>Secure Vote App: <span className="text-emerald-600">Online</span></span>
+                <div className="pt-6 border-t border-slate-100">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                    <Globe size={16} className="text-emerald-500" />
+                    <span>Secure Vote Status: <span className="text-emerald-600 font-extrabold">Online</span></span>
                   </div>
                 </div>
               </div>
             </aside>
 
-            {/* Main Content: Message Transmission Form */}
+            {/* MAIN CONTENT: CONTACT FORM */}
             <article className="lg:col-span-8">
-              <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                  <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
-                    <MdOutlineContactSupport className="text-red-700" size={24} /> New Message ?
+              <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-3">
+                    <MdOutlineContactSupport className="text-red-600" size={24} /> Send a Message
                   </h2>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Priority: Standard</span>
+                  <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100 uppercase tracking-wider">
+                    Form Disabled (Dummy)
+                  </span>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Full Name / Identity</label>
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-2">Full Name</label>
                       <input 
-                        required
+                        disabled
                         type="text" 
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
                         placeholder="e.g. Gakenye Ndiritu" 
-                        className="w-full bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl p-4 text-xs font-bold text-slate-700 outline-none transition-all mt-1" 
+                        className="w-full bg-slate-100 border border-slate-200/85 rounded-xl p-4 text-sm font-medium text-slate-400 cursor-not-allowed outline-none" 
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Student / Staff Email</label>
-                      <div className="relative mt-1">
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-2">Student or Staff Email</label>
+                      <div className="relative">
                         <input 
-                          required
+                          disabled
                           type="email" 
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
                           placeholder="name@laikipia.ac.ke" 
-                          className="w-full bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl p-4 pl-12 text-xs font-bold text-slate-700 outline-none transition-all" 
+                          className="w-full bg-slate-100 border border-slate-200/85 rounded-xl p-4 pl-12 text-sm font-medium text-slate-400 cursor-not-allowed outline-none" 
                         />
-                        <MdAlternateEmail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                        <MdAlternateEmail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-lg" />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Subject of Inquiry</label>
-                    <select className="w-full bg-slate-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase text-slate-700 mt-1 outline-none cursor-pointer focus:ring-2 focus:ring-red-500">
-                      <option>Blockchain Verification Issues</option>
-                      <option>Voter Registration Error</option>
-                      <option>Candidate Approval Query</option>
-                      <option>Other Technical Support</option>
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-2">Subject of Inquiry</label>
+                    <select 
+                      disabled
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      className="w-full bg-slate-100 border border-slate-200/85 rounded-xl p-4 text-xs font-bold uppercase text-slate-400 cursor-not-allowed outline-none"
+                    >
+                      <option value="Blockchain Verification Issues">Blockchain Verification Issues</option>
+                      <option value="Voter Registration Support">Voter Registration Support</option>
+                      <option value="Candidate Approval Query">Candidate Approval Query</option>
+                      <option value="Other Technical Assistance">Other Technical Assistance</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-[0.1em]">Message Payload</label>
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-2">Your Message</label>
                     <textarea 
-                      required
+                      disabled
                       rows={5} 
-                      placeholder="Describe the issue in detail..." 
-                      className="w-full bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl p-4 text-xs font-bold text-slate-700 outline-none transition-all mt-1 resize-none"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      placeholder="Describe your issue or question clearly..." 
+                      className="w-full bg-slate-100 border border-slate-200/85 rounded-xl p-4 text-sm font-medium text-slate-400 cursor-not-allowed outline-none resize-none"
                     />
                   </div>
 
-                  <button 
-                    disabled={loading}
-                    type="submit"
-                    className="w-full py-5 bg-[#b91c1c] text-white rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {loading ? (
-                      <span className="animate-pulse">Encrypting & Sending...</span>
-                    ) : (
-                      <>
-                        <Send size={16} /> Transmit Message
-                      </>
-                    )}
-                  </button>
+                  <div className="space-y-3">
+                    <button 
+                      disabled={true}
+                      type="submit"
+                      className="w-full py-4 bg-slate-200 text-slate-400 rounded-xl font-bold text-sm uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      <Send size={16} /> Submit Message (Disabled)
+                    </button>
+                    
+                    <div className="flex items-center justify-center gap-2 text-xs text-amber-600 font-semibold bg-amber-50 py-2.5 px-4 rounded-xl border border-amber-200">
+                      <AlertTriangle size={14} />
+                      <span>This form is currently disabled as it is a non-functional interface template.</span>
+                    </div>
+                  </div>
                 </form>
 
-                {/* Registry Notice Footer */}
-                <footer className="p-8 bg-slate-50 border-t border-slate-100 text-center">
+                {/* FORM FOOTER NOTE */}
+                <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-100 text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <MessageSquare size={14} className="text-slate-400" />
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                      Automated Response System Enabled
+                    <MessageSquare size={16} className="text-slate-400" />
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                      Automated Support System Offline
                     </p>
                   </div>
-                  <p className="text-[8px] font-bold text-slate-400 max-w-md mx-auto leading-relaxed uppercase tracking-tighter">
-                    Messages are logged into the system registry. A technical agent from the Secure Vote  // Assigned ICT staff will respond within 24 operational hours.
+                  <p className="text-xs text-slate-500 max-w-lg mx-auto leading-relaxed">
+                    Direct form submissions are temporarily offline. Please use the official support email or phone contact listed in the sidebar.
                   </p>
-                </footer>
+                </div>
               </div>
             </article>
 
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
+
+      <Footer />
     </div>
   );
 };

@@ -203,10 +203,10 @@ const { data: rosterResponse, isLoading: loadingRoster, isError: rosterError } =
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
           <div>
-            <div className="flex items-center gap-2 mb-2 text-red-700">
+            {/* <div className="flex items-center gap-2 mb-2 text-red-700">
               <Fingerprint size={16} />
               <span className="text-[10px] font-black uppercase tracking-widest">Hello: {userName || 'Voter'}</span>
-            </div>
+            </div> */}
              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase italic">
                 Results: <span className="text-red-700">{resolvedName}</span>
               </h1>

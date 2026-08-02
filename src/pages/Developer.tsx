@@ -2,7 +2,6 @@ import React from "react";
 import { 
   Globe, 
   ExternalLink, 
-  Code2, 
   Terminal, 
   Cpu, 
   Layers, 
@@ -14,7 +13,6 @@ import {
   Zap, 
   Palette, 
   Lock,
-  ChevronRight,
   Fingerprint
 } from "lucide-react";
 import { MdVerified, MdOutlineSchool, MdWorkOutline, MdBallot } from "react-icons/md";
@@ -23,254 +21,308 @@ import { Navbar } from "../components/Navbar";
 
 const DeveloperPage = () => {
   const skillGroups = {
-    "Full-Stack_Engine": [
+    "Full-Stack Development": [
       { name: "PERN Stack", level: "Expert", icon: <Layers size={14} /> },
-      { name: "TypeScript", level: "Advanced", icon: <Code2 size={14} /> },
-      { name: "Node.js/Express", level: "Expert", icon: <Activity size={14} /> },
+      { name: "TypeScript", level: "Advanced", icon: <Code2Fallback size={14} /> },
+      { name: "Node.js & Express", level: "Expert", icon: <Activity size={14} /> },
       { name: "PostgreSQL", level: "Advanced", icon: <Database size={14} /> },
     ],
-    "Mobile_&_UI": [
-      { name: "React Native/Expo", level: "Advanced", icon: <Smartphone size={14} /> },
-      { name: "React/Redux", level: "Expert", icon: <Zap size={14} /> },
+    "Mobile & UI": [
+      { name: "React Native & Expo", level: "Advanced", icon: <Smartphone size={14} /> },
+      { name: "React & Redux", level: "Expert", icon: <Zap size={14} /> },
       { name: "Tailwind CSS", level: "Expert", icon: <Palette size={14} /> },
     ],
-    "Web3_Protocols": [
-      { name: "Blockchain/EVM", level: "Specialist", icon: <Cpu size={14} /> },
+    "Web3 Protocols": [
+      { name: "Blockchain & EVM", level: "Specialist", icon: <Cpu size={14} /> },
       { name: "Solidity", level: "Mid-Level", icon: <Lock size={14} /> },
       { name: "Ethers.js", level: "Advanced", icon: <Network size={14} /> },
     ],
-    "DevOps_Matrix": [
+    "DevOps & Tools": [
       { name: "EAS Build", level: "Advanced", icon: <Terminal size={14} /> },
-      { name: "Git/VCS", level: "Expert", icon: <GitBranch size={14} /> },
+      { name: "Git & Version Control", level: "Expert", icon: <GitBranch size={14} /> },
     ]
   };
 
   const projects = [
     {
       title: "Laikipia E-Vote",
-      desc: "A decentralized voting infrastructure utilizing Ethereum Sepolia and smart contracts to ensure 100% election integrity for university governance.",
+      desc: "A decentralized mobile and web voting system powered by Ethereum smart contracts to ensure 100% fair and transparent university elections.",
       tech: ["Solidity", "React Native", "Node.js", "EAS"],
       link: "https://github.com/Gakenye8741/Laikipia-E-Vote",
-      status: "CORE_PROTOCOL"
+      status: "Patent Pending"
     },
     {
       title: "Unihaven (Hostel Finder)",
-      desc: "A high-performance accommodation registry designed to streamline the hostel discovery process for Laikipia University students.",
+      desc: "A fast, user-friendly web platform built to help Laikipia University students easily discover and secure student housing near campus.",
       tech: ["PostgreSQL", "Express", "React", "Tailwind"],
-      link: "#",
-      status: "PRODUCTION_READY"
+      link: "https://uni-hostel-finder.netlify.app/",
+      status: "Live in Production"
     },
     {
       title: "Anma Perfumes & Jewellery",
-      desc: "A full-stack e-commerce engine featuring secure payment gateways and an advanced inventory management system for high-end retail.",
-      tech: ["PERN Stack", "Redux Toolkit", "TypeScript"],
+      desc: "A full-featured e-commerce store with secure payment processing, shopping cart management, and inventory tracking for retail products.",
+      tech: ["PERN Stack", "Redux", "TypeScript"],
       link: "#",
-      status: "LIVE_STABLE"
+      status: "In Development"
     },
     {
-      title: "Dev Portfolio v2.0",
-      desc: "Personal engineering hub featuring a Cyberpunk Terminal aesthetic, real-time analytics integration, and high-performance animations.",
-      tech: ["React", "TypeScript", "Recharts", "Typed.js"],
+      title: "Personal Portfolio Hub",
+      desc: "An interactive personal developer portfolio featuring a clean, modern design, smooth transitions, and live project updates.",
+      tech: ["React", "TypeScript", "Tailwind CSS"],
       link: "/",
-      status: "75%_COMPLETE"
+      status: "Active Release"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <Navbar/>
-      <main className="p-4 md:p-8 pt-24 lg:pt-32 font-sans">
-        <div className="max-w-6xl mx-auto">
-          
-          {/* Header Section */}
-          <header className="mb-12 text-center lg:text-left flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-            <div className="flex flex-col lg:flex-row items-center gap-8">
-              <div className="relative group">
-                <div className="w-36 h-36 rounded-[3rem] bg-slate-900 border-4 border-white shadow-2xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105 duration-500">
-                   <span className="text-white font-black text-5xl italic tracking-tighter">BG</span>
-                </div>
-                <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full border-4 border-[#F8FAFC] shadow-lg">
-                  <MdVerified size={22} />
-                </div>
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-red-600 selection:text-white">
+      <Navbar />
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
+        
+        {/* HEADER SECTION */}
+        <header className="mb-16 bg-white p-8 sm:p-12 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+            <div className="relative shrink-0">
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl bg-slate-900 text-white border-4 border-white shadow-xl flex items-center justify-center">
+                <span className="font-black text-4xl sm:text-5xl italic tracking-tighter">BG</span>
               </div>
-              
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-50 rounded-full border border-red-100 shadow-sm">
-                  <span className="text-[10px] font-black text-red-700 uppercase tracking-[0.2em]">Lead Software Engineer</span>
-                </div>
-                <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">
-                  Gakenye <span className="text-red-700"> Ndiritu</span>
-                </h1>
-                <p className="text-slate-500 font-bold text-sm flex items-center justify-center lg:justify-start gap-3 uppercase tracking-tight">
-                   <span className="text-slate-900">Secretary General @ CISLU</span>
-                   <span className="h-1 w-1 bg-slate-300 rounded-full"></span>
-                   <span>Certified Full-Stack Engineer</span>
-                </p>
+              <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full border-4 border-white shadow-md">
+                <MdVerified size={20} />
               </div>
             </div>
-
-            <div className="flex gap-4 justify-center">
-              <a href="https://github.com/Gakenye8741" target="_blank" rel="noreferrer" className="p-4 bg-white border border-black-200 rounded-2xl text-black hover:text-red-700 hover:border-red-600 transition-all shadow-sm hover:shadow-md">
-                <FaGithub size={24} />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="p-4 bg-white border border-black-200 rounded-2xl text-black hover:text-red-700 hover:border-red-600 transition-all shadow-sm hover:shadow-md">
-                <FaLinkedin size={24} />
-              </a>
-              <a href="https://gakenye-ndiritu.netlify.app" target="_blank" rel="noreferrer" className="p-5 bg-slate-900 text-white rounded-[2rem] hover:bg-red-700 transition-all shadow-xl flex items-center gap-3 px-8 text-[11px] font-black uppercase tracking-[0.2em]">
-                <Globe size={18} /> Web Portifolio
-              </a>
-            </div>
-          </header>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
-            {/* Sidebar: Professional Intel */}
-            <aside className="lg:col-span-4 space-y-8">
-              <div className="bg-white rounded-[3.5rem] p-10 border border-slate-200 shadow-2xl shadow-slate-200/40 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-red-700"></div>
-                <h2 className="text-[11px] font-black text-red-700 uppercase tracking-[0.3em] mb-10 flex items-center gap-2">
-                  <Fingerprint size={16} /> Professional_Intel
-                </h2>
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 bg-red-50 border border-red-100 rounded-full text-red-700 text-xs font-bold uppercase tracking-wider">
+                Full-Stack Software Engineer
+              </span>
+              <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                Gakenye Ndiritu
+              </h1>
+              <p className="text-slate-600 font-medium text-sm flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <span>Secretary General @ CISLU</span>
+                <span className="w-1.5 h-1.5 bg-slate-300 rounded-full hidden sm:inline-block"></span>
+                <span className="text-slate-500">Laikipia University</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a 
+              href="https://github.com/Gakenye8741" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="p-3.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition shadow-sm"
+              title="GitHub Profile"
+            >
+              <FaGithub size={22} />
+            </a>
+            <a 
+              href="https://linkedin.com" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="p-3.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition shadow-sm"
+              title="LinkedIn Profile"
+            >
+              <FaLinkedin size={22} />
+            </a>
+            <a 
+              href="https://gakenye-ndiritu.co.ke" 
+              target="_blank" 
+              rel="noreferrer" 
+              className="px-6 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-xl transition shadow-md font-bold text-sm flex items-center gap-2"
+            >
+              <Globe size={18} />
+              <span>Portfolio Website</span>
+            </a>
+          </div>
+        </header>
+
+        {/* MAIN GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* SIDEBAR: INTEL & SKILLS */}
+          <aside className="lg:col-span-4 space-y-8">
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-red-600"></div>
+              
+              <h2 className="text-xs font-bold text-red-600 uppercase tracking-widest mb-6 flex items-center gap-2">
+                <Fingerprint size={16} /> Professional Profile
+              </h2>
+              
+              <div className="space-y-6">
+                {/* Education */}
+                <div className="flex gap-4 items-start">
+                  <div className="w-10 h-10 shrink-0 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-slate-600">
+                    <MdOutlineSchool size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase">Education</p>
+                    <p className="text-sm font-extrabold text-slate-900 mt-0.5">BSc. Computer Science</p>
+                    <p className="text-xs text-slate-500">Laikipia University (2026)</p>
+                  </div>
+                </div>
+
+                {/* Leadership */}
+                <div className="flex gap-4 items-start">
+                  <div className="w-10 h-10 shrink-0 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-slate-600">
+                    <FaUserShield size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase">Leadership</p>
+                    <p className="text-sm font-extrabold text-slate-900 mt-0.5">Secretary General</p>
+                    <p className="text-xs text-slate-500">Computing & Innovation Society</p>
+                  </div>
+                </div>
+
+                {/* Certification */}
+                <div className="flex gap-4 items-start">
+                  <div className="w-10 h-10 shrink-0 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-slate-600">
+                    <FaCertificate size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase">Certification</p>
+                    <p className="text-sm font-extrabold text-slate-900 mt-0.5">Software Engineering Attaché</p>
+                    <p className="text-xs text-slate-500">Teach2Give (Aug 2025)</p>
+                  </div>
+                </div>
+
+                {/* Current Role */}
+                <div className="flex gap-4 items-start">
+                  <div className="w-10 h-10 shrink-0 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-slate-600">
+                    <MdWorkOutline size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase">Current Role</p>
+                    <p className="text-sm font-extrabold text-slate-900 mt-0.5">Freelance Engineer</p>
+                    <p className="text-xs text-slate-500">Full-Stack Solutions</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Core Skills Groups */}
+              <div className="mt-8 pt-8 border-t border-slate-100 space-y-6">
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Core Technical Skills</h3>
                 
-                <div className="space-y-8">
-                  {/* Education */}
-                  <div className="flex gap-5 group">
-                    <div className="h-12 w-12 shrink-0 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-red-700 transition-colors">
-                      <MdOutlineSchool size={24} />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Education</p>
-                      <p className="text-sm font-black text-slate-800 uppercase leading-tight mt-1">BSc. Computer Science</p>
-                      <p className="text-[10px] font-bold text-slate-500 italic">Laikipia University (2026)</p>
-                    </div>
-                  </div>
-
-                  {/* Leadership */}
-                  <div className="flex gap-5 group">
-                    <div className="h-12 w-12 shrink-0 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-red-700 transition-colors">
-                      <FaUserShield size={20} />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Leadership</p>
-                      <p className="text-sm font-black text-slate-800 uppercase leading-tight mt-1">Secretary General</p>
-                      <p className="text-[10px] font-bold text-slate-500 italic uppercase">CISLU Society</p>
-                    </div>
-                  </div>
-
-                  {/* Certification */}
-                   <div className="flex gap-5 group">
-                    <div className="h-12 w-12 shrink-0 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-red-700 transition-colors">
-                      <FaCertificate size={20} />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Certification</p>
-                      <p className="text-sm font-black text-slate-800 uppercase leading-tight mt-1">S.E. Attaché</p>
-                      <p className="text-[10px] font-bold text-slate-500 italic uppercase">Teach2Give // Aug 2025</p>
-                    </div>
-                  </div>
-
-                  {/* Current Role */}
-                  <div className="flex gap-5 group">
-                    <div className="h-12 w-12 shrink-0 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-red-700 transition-colors">
-                      <MdWorkOutline size={24} />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Deployment</p>
-                      <p className="text-sm font-black text-slate-800 uppercase leading-tight mt-1">Freelance Engineer</p>
-                      <p className="text-[10px] font-bold text-slate-500 italic">Full-Stack Solutions</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Core Stack / Grouped Skills */}
-                <div className="mt-12 pt-10 border-t border-slate-100 space-y-8">
-                  <p className="text-[10px] font-black text-slate-900 uppercase tracking-[0.4em] mb-4">Core_Capabilities</p>
-                  
-                  {Object.entries(skillGroups).map(([group, list]) => (
-                    <div key={group} className="space-y-3">
-                      <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] border-l-2 border-red-700 pl-3">
-                        {group.replace(/_/g, " ")}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {list.map((skill, i) => (
-                          <div key={i} className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100 group/skill hover:bg-white hover:border-red-200 transition-all">
-                            <span className="text-red-700 group-hover/skill:scale-110 transition-transform">{skill.icon}</span>
-                            <span className="text-[9px] font-black text-slate-700 uppercase tracking-tight">{skill.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </aside>
-
-            {/* Main Content: Bio and Projects */}
-            <article className="lg:col-span-8 space-y-10">
-              <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-sm overflow-hidden group">
-                <div className="p-10 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                  <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter flex items-center gap-4">
-                    <Terminal className="text-red-700" size={28} /> System Architect Bio
-                  </h2>
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 rounded-full bg-slate-200 group-hover:bg-red-600 transition-colors"></div>
-                    <div className="w-2 h-2 rounded-full bg-slate-200 group-hover:bg-red-600 transition-colors delay-75"></div>
-                    <div className="w-2 h-2 rounded-full bg-slate-200 group-hover:bg-red-600 transition-colors delay-150"></div>
-                  </div>
-                </div>
-                <div className="p-10 space-y-6">
-                  <p className="text-lg font-bold text-slate-500 leading-relaxed italic border-l-4 border-red-50 pl-8 py-2">
-                    "I build high-performance decentralized applications that bridge the gap between traditional governance and the future of Web3. My focus is on creating secure, scalable, and user-centric registries for academic and social institutions."
-                  </p>
-                  <p className="text-[15px] text-slate-600 leading-loose font-medium tracking-tight">
-                    As the <span className="text-slate-900 font-black italic">Secretary General of the Computing & Innovation Society</span>, I lead digital transformation at Laikipia University. My work on the <strong className="text-red-700 font-black uppercase tracking-tighter underline underline-offset-4 decoration-2">Laikipia E-Vote</strong> platform serves as a blueprint for transparent, blockchain-anchored governance.
-                  </p>
-                </div>
-              </div>
-
-              {/* Projects Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {projects.map((project, i) => (
-                  <div key={i} className="bg-white p-8 rounded-[3.5rem] border border-slate-200 shadow-sm hover:shadow-2xl hover:shadow-slate-200 hover:border-red-700 transition-all duration-500 group flex flex-col h-full">
-                    <div className="flex justify-between items-start mb-8">
-                      <div className="p-4 bg-slate-900 rounded-2xl text-white group-hover:bg-red-700 transition-colors shadow-lg">
-                         <MdBallot size={24} />
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className="text-[8px] font-black px-3 py-1 bg-slate-100 text-slate-500 rounded-full uppercase tracking-widest">{project.status}</span>
-                        <ExternalLink size={18} className="text-slate-200 group-hover:text-red-700 transition-colors" />
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter mb-4 group-hover:text-red-700 transition-colors">{project.title}</h3>
-                    <p className="text-xs font-bold text-slate-500 leading-relaxed mb-8 flex-grow">
-                      {project.desc}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-auto">
-                      {project.tech.map(t => (
-                        <span key={t} className="text-[9px] font-black text-slate-900 border border-slate-200 px-3 py-1.5 rounded-xl uppercase tracking-tighter group-hover:border-red-100 group-hover:text-red-700 transition-all">{t}</span>
+                {Object.entries(skillGroups).map(([group, list]) => (
+                  <div key={group} className="space-y-2.5">
+                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider border-l-2 border-red-600 pl-2">
+                      {group}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {list.map((skill, i) => (
+                        <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-white border border-slate-200/80 rounded-lg text-xs font-semibold text-slate-700 transition">
+                          <span className="text-red-600">{skill.icon}</span>
+                          <span>{skill.name}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
-            </article>
 
-          </div>
-
-          {/* Footer Branding */}
-          <footer className="mt-24 text-center pb-12">
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="px-8 py-4 bg-slate-900 rounded-full text-white shadow-2xl flex items-center gap-4 border border-white/10 group">
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] group-hover:text-red-500 transition-colors">Built with Precision by BG Ndiritu</p>
-                <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping shadow-[0_0_8px_#dc2626]"></div>
-              </div>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic opacity-50">Authorized_Deployment_2026</p>
             </div>
-          </footer>
+          </aside>
+
+          {/* MAIN CONTENT: BIO & PROJECTS */}
+          <article className="lg:col-span-8 space-y-8">
+            
+            {/* Bio Card */}
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-red-50 text-red-600 rounded-xl">
+                    <Terminal size={22} />
+                  </div>
+                  <h2 className="text-lg font-bold text-slate-900">About Me</h2>
+                </div>
+              </div>
+              
+              <div className="space-y-4 text-slate-600 text-sm sm:text-base leading-relaxed">
+                <p className="italic text-slate-700 border-l-4 border-red-600 bg-red-50/40 p-4 rounded-r-xl">
+                  "I build reliable, high-performance web and mobile applications that bridge traditional systems with modern technology. My focus is on creating secure, user-friendly platforms for academic and social organizations."
+                </p>
+                <p>
+                  As the <strong className="text-slate-900">Secretary General of the Computing & Innovation Society</strong> at Laikipia University, I lead technical projects and digital initiatives. My work on the <strong className="text-red-600 font-semibold">Laikipia E-Vote</strong> platform sets a high standard for transparent, blockchain-anchored campus governance.
+                </p>
+              </div>
+            </div>
+
+            {/* Projects Grid */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-extrabold text-slate-900">Featured Projects</h3>
+                <span className="text-xs text-slate-500 font-medium">Production & Research</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {projects.map((project, i) => (
+                  <div key={i} className="bg-white p-7 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-red-600 transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-slate-900 text-white rounded-2xl shadow-sm">
+                          <MdBallot size={20} />
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-[10px] font-bold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full uppercase">
+                            {project.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <h4 className="text-lg font-bold text-slate-900 mb-2 hover:text-red-600 transition">
+                        {project.title}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
+                        {project.desc}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {project.tech.map(t => (
+                          <span key={t} className="text-[10px] font-bold text-slate-700 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-md">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+
+                      <a 
+                        href={project.link} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700"
+                      >
+                        <span>View Project Link</span>
+                        <ExternalLink size={14} />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </article>
+
         </div>
+
+        {/* FOOTER */}
+        <footer className="mt-20 pt-8 border-t border-slate-200 text-center">
+          <p className="text-xs font-bold text-slate-700 uppercase tracking-widest">
+            Built with Precision by Gakenye Ndiritu © 2026
+          </p>
+        </footer>
+
       </main>
     </div>
   );
 };
+
+// Fallback icon component for clean code representation
+const Code2Fallback = ({ size }: { size: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6"></polyline>
+    <polyline points="8 6 2 12 8 18"></polyline>
+  </svg>
+);
 
 export default DeveloperPage;

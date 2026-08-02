@@ -1,14 +1,13 @@
 import React, { useMemo } from 'react';
 import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  CartesianGrid, LineChart, Line, Cell, PieChart, Pie 
+  BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, 
+  CartesianGrid, LineChart, Line 
 } from "recharts";
 import { Activity, Users, Globe, Zap, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Colors matched to your specific university branding
 const PRIMARY_RED = "#b91c1c"; 
-const GRAY_ACCENT = "#475569";
 const DARK_RED = "#7f1d1d";
 
 interface AnalyticsProps {
@@ -17,7 +16,7 @@ interface AnalyticsProps {
   positions: any[];
 }
 
-const AnalyticsOverview = ({ users, elections, positions }: AnalyticsProps) => {
+const AnalyticsOverview = ({ users, elections }: AnalyticsProps) => {
   
   // 1. Logic: Voters per Election
   const voterDistribution = useMemo(() => {
@@ -56,9 +55,9 @@ const AnalyticsOverview = ({ users, elections, positions }: AnalyticsProps) => {
       <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-            <Users size={14} className="text-red-700" /> Voter_Distribution
+            <Users size={14} className="text-red-600" /> Voter Distribution
           </h3>
-          <Link to="/analytics" className="text-red-700 hover:scale-110 transition-transform">
+          <Link to="/results" className="text-red-600 hover:scale-110 transition-transform">
             <ArrowUpRight size={18} />
           </Link>
         </div>
@@ -78,11 +77,11 @@ const AnalyticsOverview = ({ users, elections, positions }: AnalyticsProps) => {
         </div>
       </div>
 
-      {/* CARD 2: SYSTEM UPLINK (REGISTRATION TREND) */}
+      {/* CARD 2: REGISTRATION TREND */}
       <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-            <Activity size={14} className="text-emerald-600" /> Uplink_Activity
+            <Activity size={14} className="text-emerald-600" /> Registration Activity
           </h3>
           <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">LIVE</span>
         </div>
@@ -106,41 +105,44 @@ const AnalyticsOverview = ({ users, elections, positions }: AnalyticsProps) => {
         </div>
       </div>
 
-      {/* CARD 3: PROTOCOL HEALTH (QUICK STATS) */}
-      <div className="bg-slate-900 rounded-[2.5rem] p-8 shadow-xl text-white flex flex-col justify-between relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
+      {/* CARD 3: SYSTEM STATUS */}
+      <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-md flex flex-col justify-between relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-5 text-slate-900">
           <Globe size={120} />
         </div>
         
         <div className="relative z-10">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-8 flex items-center gap-2">
-            <Zap size={14} className="text-yellow-400" /> Node_Status
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-8 flex items-center gap-2">
+            <Zap size={14} className="text-amber-500" /> System Status
           </h3>
           
           <div className="space-y-6">
-            <div className="flex justify-between items-end border-b border-white/10 pb-4">
+            <div className="flex justify-between items-end border-b border-slate-200 pb-4">
               <div>
-                <p className="text-[9px] font-black text-slate-500 uppercase">Integrity_Score</p>
-                <p className="text-xl font-black italic tracking-tighter">99.98%</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase">System Integrity</p>
+                <p className="text-xl font-black italic tracking-tighter text-slate-900">99.98%</p>
               </div>
-              <div className="h-2 w-24 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-2 w-24 bg-slate-200 rounded-full overflow-hidden">
                 <div className="h-full bg-red-600 w-[99%]" />
               </div>
             </div>
             
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-[9px] font-black text-slate-500 uppercase">Avg_Response</p>
-                <p className="text-xl font-black italic tracking-tighter">14ms</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase">Server Speed</p>
+                <p className="text-xl font-black italic tracking-tighter text-slate-900">14ms</p>
               </div>
-              <div className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Optimized</div>
+              <div className="text-[8px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded">Optimized</div>
             </div>
           </div>
         </div>
 
-        <button className="mt-8 w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors">
-          View Detailed Logs
-        </button>
+        <Link 
+          to="/results" 
+          className="mt-8 w-full py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-700 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors text-center shadow-xs block"
+        >
+          View Election Results
+        </Link>
       </div>
 
     </div>
