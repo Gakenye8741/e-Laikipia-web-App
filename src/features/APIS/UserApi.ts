@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const baseQuery = fetchBaseQuery({
   // Pointing to your production Render URL
-  baseUrl: 'https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api/',
+  baseUrl: 'https://online-voting-system-r2za.onrender.com/api/',
   prepareHeaders: (headers) => {
     const token = localStorage.getItem('token'); 
     if (token) {

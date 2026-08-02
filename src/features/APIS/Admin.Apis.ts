@@ -35,7 +35,7 @@ export interface DisputeVerificationResult {
 export const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api/",
+    baseUrl: "https://online-voting-system-r2za.onrender.com/api/",
     prepareHeaders: (headers, { getState }) => {
       let token = (getState() as any).auth.token;
 

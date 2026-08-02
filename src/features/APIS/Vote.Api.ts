@@ -37,7 +37,7 @@ export interface DisputeResponse {
 export const votesApi = createApi({
   reducerPath: 'votesApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api',
+    baseUrl: 'https://online-voting-system-r2za.onrender.com/api/',
     prepareHeaders: (headers) => {
       const userString = localStorage.getItem("user");
       if (userString) {

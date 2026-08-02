@@ -33,6 +33,18 @@ export interface CoalitionsResponse {
   coalitions: Coalition[];
 }
 
+export interface ElectionResponse {
+  election: {
+    id: string;
+    name: string;
+    description?: string;
+    start_date?: string;
+    end_date?: string;
+    status?: string;
+    created_at?: string;
+  };
+}
+
 export interface CreateCoalitionRequest {
   creatorCandidateId: string;
   coalition: Partial<Coalition>;
@@ -53,7 +65,7 @@ export const coalitionApi = createApi({
   reducerPath: "coalitionApi",
   baseQuery: fetchBaseQuery({
     // Standardizing the base URL
-    baseUrl: "https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api/coalitions",
+    baseUrl: "https://online-voting-system-r2za.onrender.com/api/coalitions",
     prepareHeaders: (headers) => {
       // WEB UPDATE: Use localStorage instead of AsyncStorage
       const token = localStorage.getItem("token");
@@ -66,9 +78,15 @@ export const coalitionApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Coalitions", "Slate"],
+  tagTypes: ["Coalitions", "Slate", "Election"],
   endpoints: (builder) => ({
     
+    // 0. GET LATEST ACTIVE ELECTION
+    getLatestActiveElection: builder.query<ElectionResponse, void>({
+      query: () => "election/active/latest",
+      providesTags: ["Election"],
+    }),
+
     // 1. CREATE COALITION (President Only)
     createCoalition: builder.mutation<MessageResponse, CreateCoalitionRequest>({
       query: (body) => ({
@@ -136,6 +154,7 @@ export const coalitionApi = createApi({
 
 // -------------------- HOOKS --------------------
 export const {
+  useGetLatestActiveElectionQuery,
   useCreateCoalitionMutation,
   useJoinCoalitionMutation,
   useGetCoalitionsByElectionQuery,

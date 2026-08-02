@@ -22,7 +22,7 @@ export interface ApprovalPayload {
 }
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://laikipiavotingsystem-f3aabefwhrendaae.southafricanorth-01.azurewebsites.net/api/",
+  baseUrl: "https://online-voting-system-r2za.onrender.com/api/",
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
     if (token) {
