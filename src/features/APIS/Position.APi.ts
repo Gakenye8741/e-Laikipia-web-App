@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://online-voting-system-r2za.onrender.com/api/positions/",
+    baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/positions/`,
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
     if (token) {

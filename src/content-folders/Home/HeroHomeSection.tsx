@@ -1,378 +1,451 @@
 import '../../animations/TrueFocus.css';
 import { useSelector } from 'react-redux';
-import { useRef, useEffect, useMemo } from 'react';
-import Typed from 'typed.js';
-import type { RootState } from '../../App/store';
-import TrueFocus from '../../animations/TextFocus';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  Gavel, 
-  Activity, 
-  ArrowRight, 
-  Database, 
-  Lock, 
-  ChevronRight,
+import TrueFocus from '../../animations/TextFocus';
+import {
+  Blocks,
+  Lock,
+  Activity,
+  Gavel,
+  Users,
   Loader2,
-  Zap,
-  Fingerprint,
+  ChevronRight,
+  Wallet,
   GraduationCap,
   School,
-  Wallet,
-  UserX,
-  Radio,
-  CheckCircle2,
+  LayoutDashboard,
+  Vote,
+  BarChart3,
+  Smartphone,
   ShieldCheck,
-  Award,
-  BookOpen,
+  type LucideIcon,
 } from 'lucide-react';
-import { MdVerifiedUser, MdBallot, MdDashboard } from "react-icons/md";
-import { 
-  BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, 
-  LineChart, Line 
-} from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from 'recharts';
+import type { RootState } from '../../App/store';
 
-// API Hook Imports
+// API hooks
 import { useGetAllElectionsQuery } from '../../features/APIS/Election.Api';
 import { useCountPositionsQuery } from '../../features/APIS/Position.APi';
 import { useGetAllCandidatesQuery } from '../../features/APIS/CandidateApi';
-import { useGetAllUsersQuery } from "../../features/APIS/UserApi";
+import { useGetAllUsersQuery } from '../../features/APIS/UserApi';
+
+type QuickAction = { to: string; label: string; icon: LucideIcon };
+
+const getQuickActions = (role?: string, school?: string): QuickAction[] => {
+  switch (role) {
+    case 'Admin':
+    case 'SuperAdmin':
+      return [
+        { to: '/admindashboard/AllElections', label: 'Elections', icon: Vote },
+        { to: '/admindashboard', label: 'Admin panel', icon: LayoutDashboard },
+        { to: '/results', label: 'Results', icon: BarChart3 },
+      ];
+    case 'Accountant':
+    case 'Accounts':
+      return [
+        { to: '/accounts-dashboard/', label: 'Financial records', icon: Wallet },
+        { to: '/results', label: 'Results', icon: BarChart3 },
+      ];
+    case 'Dean_of_Students':
+      return [
+        { to: '/dean-student-dashboard/', label: 'Student affairs', icon: GraduationCap },
+        { to: '/results', label: 'Results', icon: BarChart3 },
+      ];
+    case 'Dean_of_School':
+      return [
+        { to: '/dean-school-dashboard/', label: school ? `${school} portal` : 'School portal', icon: School },
+        { to: '/results', label: 'Results', icon: BarChart3 },
+      ];
+    default:
+      return [];
+  }
+};
+
+const greeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+};
+
+const roleLabel = (role?: string) => (role ? role.replace(/_/g, ' ') : 'Staff');
 
 const HeroHomeSection = () => {
-  const user = useSelector((state: RootState) => state.auth.user);
-  const firstName = user?.user?.name?.split(" ")[0] ?? 'Voter';
-  
-  // --- ROLE-BASED LOGIC ---
-  const userRole = useSelector((state: RootState) => state.auth.user?.user?.role);
-  const assignedSchool = useSelector((state: RootState) => state.auth.user?.user?.school);
+  const authUser = useSelector((state: RootState) => state.auth.user?.user);
+  const firstName = authUser?.name?.split(' ')[0] ?? 'there';
+  const userRole = authUser?.role;
+  const assignedSchool = authUser?.school;
 
-  // --- DATA FETCHING ---
+  // --- DATA ---
   const { data: electionsRaw, isLoading: loadingElections } = useGetAllElectionsQuery();
   const { data: posData, isLoading: loadingPositions } = useCountPositionsQuery();
   const { data: candData, isLoading: loadingCandidates } = useGetAllCandidatesQuery();
-  const { data: usersData } = useGetAllUsersQuery(undefined);
+  const { data: usersData, isLoading: loadingUsers } = useGetAllUsersQuery(undefined);
 
-  // --- DATA LOGIC ---
-  const elections = useMemo(() => Array.isArray(electionsRaw) ? electionsRaw : [], [electionsRaw]);
-  const users = useMemo(() => {
-    const raw = usersData?.users || usersData;
+  const elections = useMemo<any[]>(
+    () => (Array.isArray(electionsRaw) ? electionsRaw : []),
+    [electionsRaw]
+  );
+  const users = useMemo<any[]>(() => {
+    const raw = (usersData as any)?.users || usersData;
     return Array.isArray(raw) ? raw : [];
   }, [usersData]);
 
-  const activeCount = useMemo(() => elections.filter((e: any) => e.status === 'active').length, [elections]);
-  const upcomingElections = useMemo(() => elections.filter((e: any) => e.status === 'upcoming' || e.status === 'pending').slice(0, 3), [elections]);
+  const electionName = (e: any) => e.title ?? e.name ?? 'Untitled election';
 
-  const voterDistribution = useMemo(() => {
-    return elections.slice(0, 4).map(e => ({
-      name: e.name.length > 10 ? e.name.substring(0, 10) + '...' : e.name,
-      voters: users.filter((u: any) => u.election_id === e.id).length
-    }));
-  }, [users, elections]);
+  const activeCount = useMemo(
+    () => elections.filter((e) => e.status === 'active').length,
+    [elections]
+  );
+
+  const upcomingElections = useMemo(
+    () => elections.filter((e) => e.status === 'upcoming' || e.status === 'pending').slice(0, 4),
+    [elections]
+  );
+
+  const voterDistribution = useMemo(
+    () =>
+      elections.slice(0, 5).map((e) => {
+        const name = electionName(e);
+        return {
+          name: name.length > 12 ? `${name.slice(0, 12)}…` : name,
+          voters: users.filter((u) => u.election_id === e.id).length,
+        };
+      }),
+    [users, elections]
+  );
 
   const registrationTrend = useMemo(() => {
-    const map: Record<string, number> = {};
-    const last7Days = [...Array(7)].map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      return d.toLocaleDateString();
-    }).reverse();
+    const days = [...Array(7)]
+      .map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        return d;
+      })
+      .reverse();
 
-    users.forEach((u: any) => {
-      const date = new Date(u.created_at).toLocaleDateString();
-      if (last7Days.includes(date)) map[date] = (map[date] || 0) + 1;
+    const counts: Record<string, number> = {};
+    users.forEach((u) => {
+      if (!u.created_at) return;
+      const key = new Date(u.created_at).toISOString().slice(0, 10);
+      counts[key] = (counts[key] || 0) + 1;
     });
 
-    return last7Days.map(date => ({
-      date: date.split('/')[0] + '/' + date.split('/')[1],
-      count: map[date] || 0
+    return days.map((d) => ({
+      date: d.toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }),
+      count: counts[d.toISOString().slice(0, 10)] || 0,
     }));
   }, [users]);
 
-  // --- UI TYPED LOGIC ---
-  const typedRef = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    if (!typedRef.current) return;
-    const typed = new Typed(typedRef.current, {
-      strings: [firstName.toUpperCase()],
-      typeSpeed: 60,
-      showCursor: true,
-      cursorChar: '_',
-    });
-    return () => typed.destroy();
-  }, [firstName]);
+  const newThisWeek = registrationTrend.reduce((sum, d) => sum + d.count, 0);
+  const quickActions = getQuickActions(userRole, assignedSchool);
+  const isVoter = userRole === 'Voter';
 
-  // --- ROLE BUTTONS ---
-  const renderDashboardButtons = () => {
-    if (userRole === "Voter") {
-      return (
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-          <div className="flex items-center gap-3 bg-slate-100/80 border border-slate-200/80 px-6 py-4 rounded-2xl w-full sm:w-auto">
-            <UserX size={18} className="text-slate-400 shrink-0" />
-            <div>
-              <p className="text-xs font-bold text-slate-700">Voter Account</p>
-              <p className="text-xs text-slate-500">Ready to vote safely online.</p>
-            </div>
-          </div>
-          <Link to="/elections" className="w-full sm:w-auto bg-red-600 text-white px-8 py-4 rounded-xl font-bold text-sm tracking-wider uppercase hover:bg-red-700 transition shadow-md flex items-center justify-center gap-3">
-             Cast Your Vote <ArrowRight size={18} />
-          </Link>
-        </div>
-      );
-    } 
-    
-    if (userRole === "Accountant" || userRole === "Accounts") {
-      return (
-        <Link to="/accounts-dashboard/" className="w-full sm:w-auto bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-sm tracking-wider uppercase hover:bg-emerald-700 transition shadow-md flex items-center justify-center gap-3">
-          <Wallet size={18} /> Financial Records <ArrowRight size={18} />
-        </Link>
-      );
-    } 
-    
-    if (userRole === "Dean_of_Students") {
-      return (
-        <Link to="/dean-student-dashboard/" className="w-full sm:w-auto bg-red-600 text-white px-8 py-4 rounded-xl font-bold text-sm tracking-wider uppercase hover:bg-red-700 transition shadow-md flex items-center justify-center gap-3">
-          <GraduationCap size={18} /> Student Affairs <ArrowRight size={18} />
-        </Link>
-      );
-    } 
-    
-    if (userRole === "Dean_of_School") {
-      return (
-        <Link to="/dean-school-dashboard/" className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-sm tracking-wider uppercase hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-3">
-          <School size={18} /> Dean Portal: {assignedSchool || "School"} <ArrowRight size={18} />
-        </Link>
-      );
-    } 
-    
-    if (userRole === "Admin" || userRole === "SuperAdmin") {
-      return (
-        <div className="flex flex-col sm:flex-row flex-wrap gap-4 w-full">
-          <Link to="/admindashboard/AllElections" className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-sm tracking-wider uppercase hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-3">
-            <MdDashboard size={18} /> Manage Elections <ArrowRight size={18} />
-          </Link>
-          <Link to="/admindashboard" className="w-full sm:w-auto bg-white border border-slate-300 text-slate-800 px-8 py-4 rounded-xl font-bold text-sm tracking-wider uppercase hover:border-red-600 transition shadow-xs flex items-center justify-center gap-3">
-            Admin Panel
-          </Link>
-        </div>
-      );
-    }
-
-    return null;
-  };
+  const Spinner = <Loader2 size={18} className="animate-spin text-slate-400" />;
 
   const stats = [
-    { label: "Active Polls", val: loadingElections ? <Loader2 size={16} className="animate-spin"/> : activeCount, icon: <Activity size={18}/>, color: "border-l-emerald-500", text: "text-emerald-600" },
-    { label: "Network", val: "Sepolia", icon: <Database size={18}/>, color: "border-l-red-600", text: "text-red-600" },
-    { label: "Seats Open", val: loadingPositions ? <Loader2 size={16} className="animate-spin"/> : (posData?.count || 0), icon: <Gavel size={18}/>, color: "border-l-slate-800", text: "text-slate-900" },
-    { label: "Candidates", val: loadingCandidates ? <Loader2 size={16} className="animate-spin"/> : (candData?.candidates?.length || 0), icon: <Users size={18}/>, color: "border-l-blue-600", text: "text-blue-600" },
+    {
+      label: 'Registered voters',
+      value: loadingUsers ? Spinner : users.length.toLocaleString(),
+      icon: Users,
+      tint: 'bg-blue-50 text-blue-600',
+    },
+    {
+      label: 'Candidates',
+      value: loadingCandidates ? Spinner : ((candData as any)?.candidates?.length ?? 0),
+      icon: Activity,
+      tint: 'bg-emerald-50 text-emerald-600',
+    },
+    {
+      label: 'Open seats',
+      value: loadingPositions ? Spinner : ((posData as any)?.count ?? 0),
+      icon: Gavel,
+      tint: 'bg-amber-50 text-amber-600',
+    },
+    {
+      label: 'Network',
+      value: 'Sepolia',
+      icon: ShieldCheck,
+      tint: 'bg-red-50 text-red-600',
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pt-24 pb-20 selection:bg-red-600 selection:text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* TOP STATUS BAR */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-white border border-slate-200/80 rounded-full shadow-xs">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+    <div className="min-h-screen bg-slate-100 pt-24 pb-16 text-slate-900 selection:bg-red-600 selection:text-white">
+      <div className="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
+        {/* HEADER */}
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-white shadow-sm">
+              <ShieldCheck size={24} />
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Secure Online Voting System</span>
-          </div>
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            Laikipia University
-          </div>
-        </div>
-
-        {/* MAIN SECTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
-          {/* LEFT WELCOME BOX */}
-          <div className="lg:col-span-7 flex flex-col justify-between space-y-8 bg-white p-6 sm:p-12 rounded-3xl border border-slate-200/80 shadow-sm">
-            <div className="space-y-6">
-              <div className="inline-block">
-                <TrueFocus sentence="SECURE-VOTE APP" blurAmount={3} borderColor="#dc2626" />
-              </div>
-              <h1 className="text-3xl sm:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-                {userRole === "Voter" ? "Hello Student," : "Welcome Back,"}<br />
-                <span ref={typedRef} className="text-red-600 border-r-4 border-red-600 pr-2" />
+            <div>
+              <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
+                SECURE-VOTE APP
               </h1>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl">
-                Cast your vote easily and safely for your campus student leaders using our trusted online voting system.
+              <p className="text-sm text-slate-500">
+                {greeting()}, {firstName}
+                <span className="mx-2 text-slate-300">|</span>
+                {new Date().toLocaleDateString('en-KE', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                })}
               </p>
-
-              {/* QUICK INFO CARDS */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/60">
-                  <div className="p-2 bg-red-100 text-red-600 rounded-xl">
-                    <ShieldCheck size={18} />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold uppercase text-slate-400">Safe</p>
-                    <p className="text-xs font-bold text-slate-800">Protected Ballots</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/60">
-                  <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl">
-                    <Award size={18} />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold uppercase text-slate-400">Award</p>
-                    <p className="text-xs font-bold text-slate-800">Innovation Day #2</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/60">
-                  <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
-                    <BookOpen size={18} />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold uppercase text-slate-400">Network</p>
-                    <p className="text-xs font-bold text-slate-800">Ethereum Sepolia</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* STATS COUNTERS */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {stats.map((stat, i) => (
-                <div key={i} className={`bg-slate-50 p-4 rounded-2xl border border-slate-200/80 border-l-4 ${stat.color}`}>
-                  <div className="flex items-center gap-2 mb-2 text-slate-400">
-                    {stat.icon}
-                    <span className="text-xs font-bold uppercase tracking-wider">{stat.label}</span>
-                  </div>
-                  <div className={`text-2xl font-black ${stat.text}`}>{stat.val}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* ACTION BUTTONS */}
-            <div className="pt-4 border-t border-slate-100">
-              {renderDashboardButtons()}
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+              {roleLabel(userRole)}
+            </span>
+            <span className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              Laikipia University
+            </span>
+          </div>
+        </header>
 
-          {/* RIGHT SIDEBAR: UPCOMING ELECTIONS */}
-          <div className="lg:col-span-5 flex flex-col justify-between bg-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none text-white">
-              <MdVerifiedUser size={280} />
+        {/* VOTERS: students use the mobile app */}
+        {isVoter && (
+          <div className="flex items-start gap-4 rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+            <div className="rounded-xl bg-red-50 p-3 text-red-600">
+              <Smartphone size={22} />
             </div>
+            <div>
+              <h2 className="font-semibold">Voting happens in the mobile app</h2>
+              <p className="mt-1 max-w-prose text-sm text-slate-500">
+                This dashboard is for election administrators. Open the Secure-Vote mobile app on
+                your phone to see elections and cast your vote.
+              </p>
+            </div>
+          </div>
+        )}
 
-            <div className="relative z-10 space-y-6">
-              <div className="flex items-center justify-between pb-6 border-b border-slate-800">
-                <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2.5 text-slate-300">
-                  <MdBallot className="text-red-500" size={20} /> Election Schedule
-                </h3>
-                <span className="px-3 py-1 bg-red-500/10 text-red-400 rounded-full text-xs font-bold uppercase tracking-wider border border-red-500/20">
-                  Live
-                </span>
-              </div>
+        {/* MAIN GRID */}
+        {!isVoter && (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* BALANCE-STYLE HERO CARD */}
+            <section className="lg:col-span-2">
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-700 via-red-600 to-red-800 p-6 text-white shadow-lg sm:p-8">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -bottom-24 right-24 h-56 w-56 rounded-full bg-black/10"
+                />
 
-              <div className="space-y-3">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Upcoming Elections</p>
-                {upcomingElections.length > 0 ? (
-                  upcomingElections.map((election: any, idx: number) => (
-                    <div key={idx} className="p-4 bg-slate-800/80 border border-slate-700/80 rounded-2xl flex justify-between items-center hover:bg-slate-800 transition">
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="h-9 w-9 bg-slate-700 rounded-xl flex items-center justify-center text-red-400 shrink-0">
-                          <Fingerprint size={18} />
-                        </div>
-                        <p className="text-xs font-bold text-white uppercase truncate">{election.title}</p>
-                      </div>
-                      <ChevronRight className="text-red-500 shrink-0 ml-2" size={16} />
+                <div className="relative mb-8">
+                  <TrueFocus sentence="SECURE-VOTE APP" blurAmount={3} borderColor="#ffffff" />
+                  <p className="mt-3 flex items-center gap-2 text-sm text-red-100">
+                    <Blocks size={16} /> Blockchain-secured campus elections
+                  </p>
+                </div>
+
+                <div className="relative flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-red-100">Live elections</p>
+                    <div className="mt-2 flex items-baseline gap-3">
+                      <span className="text-5xl font-bold tabular-nums tracking-tight sm:text-6xl">
+                        {loadingElections ? '–' : activeCount}
+                      </span>
+                      <span className="text-sm text-red-100">of {elections.length} total</span>
                     </div>
-                  ))
-                ) : (
-                  <div className="p-6 bg-slate-800/50 rounded-2xl text-center text-xs text-slate-400">
-                    No upcoming elections right now.
                   </div>
-                )}
-              </div>
-            </div>
-
-            <div className="relative z-10 mt-8 pt-6 border-t border-slate-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-red-600 rounded-xl text-white">
-                    <Lock size={16} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider">Blockchain Protected</p>
-                    <p className="text-xs text-slate-400">Your vote remains private and secure.</p>
-                  </div>
-                </div>
-                <Radio className="text-emerald-400 animate-pulse" size={20} />
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* CHARTS AND GRAPHICS SECTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-          
-          {/* VOTER DISTRIBUTION CHART */}
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2 mb-6">
-              <Users size={16} className="text-red-600" /> Voters Per Election
-            </h3>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={voterDistribution}>
-                  <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} stroke="#64748b" />
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }} />
-                  <Bar dataKey="voters" fill="#dc2626" radius={[6, 6, 0, 0]} barSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* REGISTRATION TREND CHART */}
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2 mb-6">
-              <Activity size={16} className="text-emerald-600" /> Voter Sign-ups (Last 7 Days)
-            </h3>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={registrationTrend}>
-                  <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} stroke="#64748b" />
-                  <Line type="monotone" dataKey="count" stroke="#dc2626" strokeWidth={3} dot={{ r: 4, fill: '#dc2626' }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* SYSTEM STATUS */}
-          <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-lg text-white flex flex-col justify-between">
-            <div className="space-y-6">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                <Zap size={16} className="text-amber-400" /> System Status
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                  <span className="text-xs font-bold text-slate-400 uppercase">System Security</span>
-                  <span className="text-sm font-black text-emerald-400">99.9% Safe</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                  <span className="text-xs font-bold text-slate-400 uppercase">Encryption</span>
-                  <span className="text-sm font-black text-white">Full SSL</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-slate-400 uppercase">Server Status</span>
-                  <span className="text-xs font-bold text-emerald-400 uppercase flex items-center gap-1.5">
-                    <CheckCircle2 size={14} /> Online
+                  <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+                    Ethereum Sepolia
                   </span>
                 </div>
+
+                <div className="relative mt-6 flex items-end justify-between gap-6">
+                  <div>
+                    <p className="text-xs text-red-100">New voters this week</p>
+                    <p className="mt-1 text-2xl font-semibold tabular-nums">+{newThisWeek}</p>
+                  </div>
+                  <div className="h-16 w-40 sm:w-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={registrationTrend}>
+                        <Line
+                          type="monotone"
+                          dataKey="count"
+                          stroke="#ffffff"
+                          strokeWidth={2.5}
+                          dot={false}
+                          isAnimationActive={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* QUICK ACTIONS */}
+              {quickActions.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {quickActions.map(({ to, label, icon: Icon }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      className="group flex flex-col items-center gap-2 rounded-2xl bg-white px-3 py-4 text-center ring-1 ring-slate-200 transition hover:ring-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-600 transition group-hover:bg-red-600 group-hover:text-white">
+                        <Icon size={20} />
+                      </span>
+                      <span className="text-xs font-medium text-slate-700">{label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* UPCOMING ELECTIONS (transaction-list style) */}
+            <section className="rounded-3xl bg-white p-5 ring-1 ring-slate-200 sm:p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-semibold">Upcoming elections</h2>
+                <Link
+                  to="/admindashboard/AllElections"
+                  className="text-xs font-medium text-red-600 hover:underline"
+                >
+                  See all
+                </Link>
+              </div>
+
+              {upcomingElections.length > 0 ? (
+                <ul className="divide-y divide-slate-100">
+                  {upcomingElections.map((e, idx) => (
+                    <li key={e.id ?? idx} className="flex items-center gap-3 py-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                        <Vote size={18} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{electionName(e)}</p>
+                        <p className="text-xs capitalize text-slate-500">{e.status}</p>
+                      </div>
+                      <ChevronRight size={16} className="shrink-0 text-slate-300" />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="rounded-2xl bg-slate-50 p-6 text-center">
+                  <p className="text-sm font-medium">Nothing scheduled</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Create an election and it will show up here.
+                  </p>
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+
+        {/* STAT TILES */}
+        {!isVoter && (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {stats.map(({ label, value, icon: Icon, tint }) => (
+              <div key={label} className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+                <span className={`mb-3 flex h-9 w-9 items-center justify-center rounded-full ${tint}`}>
+                  <Icon size={17} />
+                </span>
+                <p className="text-xs text-slate-500">{label}</p>
+                <div className="mt-1 flex min-h-[2rem] items-center text-xl font-bold tabular-nums">
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* BLOCKCHAIN TRUST STRIP */}
+        {!isVoter && (
+          <div className="flex flex-col gap-4 rounded-3xl bg-slate-900 p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="flex items-start gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-600">
+                <Lock size={20} />
+              </span>
+              <div>
+                <h2 className="font-semibold">Every vote is recorded on the blockchain</h2>
+                <p className="mt-1 max-w-prose text-sm text-slate-400">
+                  Students vote in the SECURE-VOTE mobile app. Ballots are written to Ethereum
+                  Sepolia, so results can be checked and can't be changed afterwards.
+                </p>
               </div>
             </div>
-            <Link to="/results" className="mt-6 block text-center py-3.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-red-600 transition shadow-xs">
-              View Analytics Reports
+            <Link
+              to="/results"
+              className="shrink-0 rounded-xl bg-white px-5 py-3 text-center text-sm font-semibold text-slate-900 transition hover:bg-red-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+            >
+              View results
             </Link>
           </div>
+        )}
 
-        </div>
+        {/* CHARTS */}
+        {!isVoter && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <section className="rounded-3xl bg-white p-5 ring-1 ring-slate-200 sm:p-6">
+              <h2 className="mb-1 font-semibold">Voters per election</h2>
+              <p className="mb-4 text-xs text-slate-500">First five elections</p>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={voterDistribution}>
+                    <XAxis
+                      dataKey="name"
+                      fontSize={11}
+                      axisLine={false}
+                      tickLine={false}
+                      stroke="#94a3b8"
+                    />
+                    <Tooltip
+                      cursor={{ fill: '#f1f5f9' }}
+                      contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }}
+                    />
+                    <Bar dataKey="voters" fill="#dc2626" radius={[8, 8, 0, 0]} barSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
 
+            <section className="rounded-3xl bg-white p-5 ring-1 ring-slate-200 sm:p-6">
+              <h2 className="mb-1 font-semibold">Voter sign-ups</h2>
+              <p className="mb-4 text-xs text-slate-500">Last 7 days</p>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={registrationTrend}>
+                    <XAxis
+                      dataKey="date"
+                      fontSize={11}
+                      axisLine={false}
+                      tickLine={false}
+                      stroke="#94a3b8"
+                    />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#dc2626"
+                      strokeWidth={3}
+                      dot={{ r: 3, fill: '#dc2626' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </div>
   );

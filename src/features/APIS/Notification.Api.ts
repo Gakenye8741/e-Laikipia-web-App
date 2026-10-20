@@ -18,7 +18,7 @@ interface NotificationsResponse {
 
 const baseQuery = fetchBaseQuery({
   // Backend Production URL
-  baseUrl: "https://online-voting-system-r2za.onrender.com/api/notifications", 
+    baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/notifications`,
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
     if (token) {

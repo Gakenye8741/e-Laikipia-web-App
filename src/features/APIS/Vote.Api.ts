@@ -37,7 +37,7 @@ export interface DisputeResponse {
 export const votesApi = createApi({
   reducerPath: 'votesApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'https://online-voting-system-r2za.onrender.com/api/',
+      baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/`,
     prepareHeaders: (headers) => {
       const userString = localStorage.getItem("user");
       if (userString) {

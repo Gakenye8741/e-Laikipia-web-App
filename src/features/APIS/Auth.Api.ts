@@ -49,8 +49,7 @@ export interface UserResponse {
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://online-voting-system-r2za.onrender.com/api/auth/",
-    prepareHeaders: (headers, { getState }) => {
+      baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/auth/`,    prepareHeaders: (headers, { getState }) => {
       // First try Redux state
       let token = (getState() as any).auth.token;
 

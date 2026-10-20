@@ -22,7 +22,7 @@ export interface ApprovalPayload {
 }
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://online-voting-system-r2za.onrender.com/api/",
+    baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/`,
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
     if (token) {

@@ -15,7 +15,7 @@ export interface Candidate {
 export const candidatesApi = createApi({
   reducerPath: "candidatesApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "hhttps://online-voting-system-r2za.onrender.com/api/candidates",
+      baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/candidates`,
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
       if (token) {

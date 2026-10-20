@@ -65,7 +65,7 @@ export const coalitionApi = createApi({
   reducerPath: "coalitionApi",
   baseQuery: fetchBaseQuery({
     // Standardizing the base URL
-    baseUrl: "https://online-voting-system-r2za.onrender.com/api/coalitions",
+      baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/coalitions`,
     prepareHeaders: (headers) => {
       // WEB UPDATE: Use localStorage instead of AsyncStorage
       const token = localStorage.getItem("token");

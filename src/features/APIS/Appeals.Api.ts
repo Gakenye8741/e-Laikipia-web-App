@@ -42,11 +42,14 @@ export interface GetAppealsByRoleArgs {
    API Configuration
 ================================ */
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://online-voting-system-r2za.onrender.com/api/",
+  // Uses Vite environment variable, falls back to custom live VPS domain
+  baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/`,
   prepareHeaders: (headers) => {
-    const token = localStorage.getItem("token");
+    let token = localStorage.getItem("token");
     if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+      // Essential: Clean escaped quotes from storage
+      const cleanToken = token.replace(/[\\"]/g, '').trim();
+      headers.set("Authorization", `Bearer ${cleanToken}`);
     }
     headers.set("Content-Type", "application/json");
     return headers;
@@ -89,7 +92,6 @@ export const appealsApi = createApi({
     }),
 
     // 5️⃣ Resolve or Re-evaluate an appeal
-    // Updated to handle the additional stage property
     resolveAppeal: builder.mutation<Appeal, ResolveAppealPayload>({
       query: ({ appealId, ...body }) => ({
         url: `appeals/${appealId}/resolve`,

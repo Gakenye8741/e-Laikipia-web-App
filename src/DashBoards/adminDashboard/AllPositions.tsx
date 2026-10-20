@@ -1,9 +1,22 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { PuffLoader } from "react-spinners";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaSync, FaTimes } from "react-icons/fa";
+import { AnimatePresence, MotionConfig, animate, motion, useInView, type Variants } from "framer-motion";
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSearch,
+  FaSync,
+  FaChevronLeft,
+  FaChevronRight,
+  FaExclamationTriangle,
+  FaUniversity,
+  FaVoteYea,
+} from "react-icons/fa";
 import { MdBallot } from "react-icons/md";
+import { toast } from "sonner";
 
 import {
   useGetAllPositionsQuery,
@@ -11,12 +24,11 @@ import {
   useUpdatePositionMutation,
   useDeletePositionMutation,
 } from "../../features/APIS/Position.APi";
-
 import { useGetAllElectionsQuery } from "../../features/APIS/Election.Api";
 
 const MySwal = withReactContent(Swal);
 
-/* ================= ENUMS ================= */
+/* ============================== Types & constants ============================== */
 const TIERS = ["school", "university"] as const;
 const SCHOOLS = [
   "Science",
@@ -26,385 +38,584 @@ const SCHOOLS = [
   "TVET",
 ] as const;
 
-export const AllPositions = () => {
-  /* ================= FETCHING DATA ================= */
-  const { data: positionsRaw, isLoading: isLoadingPositions, error, refetch: refetchPositions } = useGetAllPositionsQuery();
-  const { data: electionsRaw, isLoading: isLoadingElections, refetch: refetchElections } = useGetAllElectionsQuery();
+const ITEMS_PER_PAGE = 6;
 
-  /* ================= MUTATIONS ================= */
+interface Position {
+  id: string;
+  name: string;
+  description?: string;
+  tier: string;
+  school?: string | null;
+  election_id: string;
+  [key: string]: any;
+}
+interface Election {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+interface PositionForm {
+  name: string;
+  description: string;
+  tier: string;
+  school: string | null;
+  election_id: string;
+}
+
+/* Dialog styling: buttons use Tailwind instead of the SweetAlert defaults */
+const swalField =
+  "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10 disabled:cursor-not-allowed disabled:opacity-50";
+const swalLabel = "mb-1 block text-sm font-semibold text-slate-700";
+const swalBase = {
+  buttonsStyling: false,
+  customClass: {
+    popup: "rounded-3xl p-6",
+    title: "text-2xl font-black text-slate-900",
+    htmlContainer: "text-slate-600",
+    confirmButton: "mx-1 rounded-xl bg-red-700 px-5 py-3 text-sm font-bold text-white hover:bg-red-800",
+    cancelButton: "mx-1 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50",
+  },
+};
+
+/* ================================== Helpers ================================== */
+const escapeHtml = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const schoolLabel = (s?: string | null) => (s || "").replace(/_/g, " ");
+
+/* ================================== Motion ================================== */
+const page: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut", staggerChildren: 0.08 } },
+};
+const item: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+};
+
+/* ============================== Small components ============================== */
+const Counter = ({ to }: { to: number }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const seen = useInView(ref, { once: true });
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!seen) return;
+    const c = animate(0, to, { duration: 0.9, ease: "easeOut", onUpdate: (v) => setN(Math.round(v)) });
+    return () => c.stop();
+  }, [seen, to]);
+  return <span ref={ref}>{n.toLocaleString()}</span>;
+};
+
+const StatCard = ({ label, value }: { label: string; value: number }) => (
+  <motion.div variants={item} className="bg-white p-5">
+    <p className="text-sm font-semibold text-slate-500">{label}</p>
+    <p className="mt-1 text-3xl font-black tabular-nums text-slate-900">
+      <Counter to={value} />
+    </p>
+  </motion.div>
+);
+
+const ActionButton = ({
+  label, icon, onClick, danger = false, disabled = false,
+}: { label: string; icon: ReactNode; onClick: () => void; danger?: boolean; disabled?: boolean }) => (
+  <motion.button
+    whileTap={{ scale: 0.95 }}
+    onClick={onClick}
+    disabled={disabled}
+    className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 transition-colors focus:outline-none focus:ring-4 focus:ring-red-600/10 disabled:opacity-50 ${
+      danger ? "hover:border-red-200 hover:bg-red-50 hover:text-red-700" : "hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+    }`}
+  >
+    {icon} {label}
+  </motion.button>
+);
+
+const PositionCard = ({
+  position, electionName, index, deleting, onEdit, onDelete,
+}: {
+  position: Position; electionName?: string; index: number; deleting: boolean;
+  onEdit: (p: Position) => void; onDelete: (p: Position) => void;
+}) => {
+  const isUniversity = position.tier === "university";
+  return (
+    <motion.article
+      layout="position"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0, transition: { delay: index * 0.05, duration: 0.35 } }}
+      exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.18 } }}
+      className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-lg hover:shadow-slate-200/60"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${
+            isUniversity ? "border-amber-200 bg-amber-50 text-amber-700" : "border-red-200 bg-red-50 text-red-700"
+          }`}
+        >
+          {isUniversity ? <FaUniversity size={10} /> : <MdBallot size={12} />}
+          {cap(position.tier || "Not set")}
+        </span>
+        <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+          {isUniversity ? "All schools" : schoolLabel(position.school) || "No school chosen"}
+        </span>
+      </div>
+
+      <h3 className="mt-4 text-lg font-black leading-snug text-slate-900">{position.name || "Untitled position"}</h3>
+      <p className="mt-1 flex-1 text-sm leading-relaxed text-slate-500">{position.description || "No description added."}</p>
+
+      <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4 text-sm">
+        <FaVoteYea className="shrink-0 text-red-700" />
+        <span className="text-slate-500">Election:</span>
+        <span className="truncate font-bold text-slate-800">{electionName || "Not linked"}</span>
+      </div>
+
+      <div className="mt-4 flex gap-2">
+        <ActionButton label="Edit" icon={<FaEdit />} onClick={() => onEdit(position)} />
+        <ActionButton label="Delete" icon={deleting ? <FaSync className="animate-spin" /> : <FaTrash />} onClick={() => onDelete(position)} danger disabled={deleting} />
+      </div>
+    </motion.article>
+  );
+};
+
+const Pagination = ({
+  page: current, totalPages, onChange,
+}: { page: number; totalPages: number; onChange: (p: number) => void }) => (
+  <div className="flex flex-wrap items-center justify-center gap-2">
+    <button
+      disabled={current <= 1}
+      onClick={() => onChange(current - 1)}
+      aria-label="Previous page"
+      className="rounded-lg border border-slate-200 bg-white p-2.5 text-slate-600 transition hover:border-red-300 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <FaChevronLeft size={11} />
+    </button>
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+      <button
+        key={n}
+        onClick={() => onChange(n)}
+        aria-current={n === current ? "page" : undefined}
+        className={`h-10 w-10 rounded-lg text-sm font-bold transition ${
+          n === current ? "bg-red-700 text-white" : "border border-slate-200 bg-white text-slate-600 hover:border-red-300 hover:text-red-700"
+        }`}
+      >
+        {n}
+      </button>
+    ))}
+    <button
+      disabled={current >= totalPages}
+      onClick={() => onChange(current + 1)}
+      aria-label="Next page"
+      className="rounded-lg border border-slate-200 bg-white p-2.5 text-slate-600 transition hover:border-red-300 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <FaChevronRight size={11} />
+    </button>
+  </div>
+);
+
+const selectClass =
+  "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-red-600 focus:bg-white focus:ring-4 focus:ring-red-600/10";
+
+/* ================================ The page ================================ */
+export const AllPositions = () => {
+  /* ---------- Data ---------- */
+  const { data: positionsRaw, isLoading: isLoadingPositions, isError, isFetching: fetchingPositions, refetch: refetchPositions } = useGetAllPositionsQuery();
+  const { data: electionsRaw, isLoading: isLoadingElections, isFetching: fetchingElections, refetch: refetchElections } = useGetAllElectionsQuery();
+
   const [createPosition] = useCreatePositionMutation();
   const [updatePosition] = useUpdatePositionMutation();
   const [deletePosition] = useDeletePositionMutation();
 
-  /* ================= LOCAL STATE ================= */
+  /* ---------- State ---------- */
   const [searchTerm, setSearchTerm] = useState("");
   const [tierFilter, setTierFilter] = useState("");
   const [schoolFilter, setSchoolFilter] = useState("");
   const [electionFilter, setElectionFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const itemsPerPage = 6;
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const defaultElectionApplied = useRef(false);
 
-  /* ================= DATA GUARDS & NORMALIZATION ================= */
-  const positions = useMemo(() => {
+  const positions = useMemo((): Position[] => {
     const data = (positionsRaw as any)?.positions || positionsRaw;
     return Array.isArray(data) ? data : [];
   }, [positionsRaw]);
 
-  const elections = useMemo(() => {
+  const elections = useMemo((): Election[] => {
     const data = (electionsRaw as any)?.elections || electionsRaw;
     return Array.isArray(data) ? data : [];
   }, [electionsRaw]);
 
+  /* Start on the newest election, once. Choosing "All elections" later is kept. */
   useEffect(() => {
-    if (elections.length > 0 && !electionFilter) {
+    if (elections.length > 0 && !defaultElectionApplied.current) {
+      defaultElectionApplied.current = true;
       setElectionFilter(elections[elections.length - 1].id);
     }
-  }, [elections, electionFilter]);
+  }, [elections]);
 
-  const electionMap = useMemo(() => elections.reduce((acc: Record<string, string>, e: any) => {
-    acc[e.id] = e.name;
-    return acc;
-  }, {}), [elections]);
+  const electionMap = useMemo(
+    () =>
+      elections.reduce((acc: Record<string, string>, e) => {
+        acc[e.id] = e.name;
+        return acc;
+      }, {}),
+    [elections]
+  );
+
+  const filteredPositions = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return positions.filter(
+      (p) =>
+        (p.name?.toLowerCase().includes(term) ?? false) &&
+        (tierFilter ? p.tier === tierFilter : true) &&
+        (schoolFilter ? p.school === schoolFilter : true) &&
+        (electionFilter ? p.election_id === electionFilter : true)
+    );
+  }, [positions, searchTerm, tierFilter, schoolFilter, electionFilter]);
+
+  /* Counts for the tier chips follow the chosen election */
+  const tierCounts = useMemo(() => {
+    const inElection = positions.filter((p) => (electionFilter ? p.election_id === electionFilter : true));
+    return {
+      all: inElection.length,
+      school: inElection.filter((p) => p.tier === "school").length,
+      university: inElection.filter((p) => p.tier === "university").length,
+    };
+  }, [positions, electionFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPositions.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageItems = filteredPositions.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+
+  const hasFilters = !!(searchTerm || tierFilter || schoolFilter || electionFilter);
+  const clearFilters = () => {
+    setSearchTerm("");
+    setTierFilter("");
+    setSchoolFilter("");
+    setElectionFilter("");
+  };
 
   useEffect(() => setCurrentPage(1), [searchTerm, tierFilter, schoolFilter, electionFilter]);
 
-  /* ================= REFRESH HANDLER ================= */
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await Promise.all([refetchPositions(), refetchElections()]);
-    setTimeout(() => setIsRefreshing(false), 1000); 
-  };
+  const handleRefresh = () => Promise.all([refetchPositions(), refetchElections()]);
 
-  /* ================= FILTER LOGIC ================= */
-  const filteredPositions = positions.filter((p: any) =>
-    (p.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (tierFilter ? p.tier === tierFilter : true) &&
-    (schoolFilter ? p.school === schoolFilter : true) &&
-    (electionFilter ? p.election_id === electionFilter : true)
-  );
-
-  const totalPages = Math.ceil(filteredPositions.length / itemsPerPage);
-  const paginatedPositions = filteredPositions.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  /* ================= MODAL STYLING & HANDLERS ================= */
-  const handleAddPosition = async () => {
-    const tierOptions = TIERS.map((t) => `<option value="${t}">${t.toUpperCase()}</option>`).join("");
-    const schoolOptions = SCHOOLS.map((s) => `<option value="${s}">${(s || "").replace(/_/g, " ")}</option>`).join("");
-    const electionOptions = elections.map((e: any) => `<option value="${e.id}">${e.name}</option>`).join("");
+  /* ---------- Shared create and edit dialog ---------- */
+  const openPositionForm = async (opts: {
+    title: string;
+    confirmText: string;
+    initial?: Partial<Position>;
+  }): Promise<PositionForm | undefined> => {
+    const i = opts.initial || {};
+    const tierOptions = TIERS.map((t) => `<option value="${t}" ${t === i.tier ? "selected" : ""}>${cap(t)}</option>`).join("");
+    const schoolOptions = SCHOOLS.map((s) => `<option value="${s}" ${s === i.school ? "selected" : ""}>${escapeHtml(schoolLabel(s))}</option>`).join("");
+    const electionOptions = elections
+      .map((e) => `<option value="${escapeHtml(e.id)}" ${e.id === i.election_id ? "selected" : ""}>${escapeHtml(e.name)}</option>`)
+      .join("");
 
     const { value } = await MySwal.fire({
-      title: '<span class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Registry System</span><br/><b class="text-slate-800 tracking-tighter italic uppercase text-2xl">Deploy New Position</b>',
+      ...swalBase,
+      title: opts.title,
       html: `
-        <div class="text-left font-sans p-2">
-          <div class="mb-4">
-            <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Position Name</label>
-            <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="e.g. Secretary General" />
+        <div class="space-y-4 text-left">
+          <div>
+            <label class="${swalLabel}" for="pos-name">Position name</label>
+            <input id="pos-name" class="${swalField}" placeholder="For example Secretary general" value="${escapeHtml(i.name)}" />
           </div>
-          <div class="mb-4">
-            <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Role Description</label>
-            <input id="description" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" placeholder="Spokes person of the student council" />
+          <div>
+            <label class="${swalLabel}" for="pos-description">What does this role do?</label>
+            <input id="pos-description" class="${swalField}" placeholder="For example Speaks for the student council" value="${escapeHtml(i.description)}" />
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Administrative Tier</label>
-              <select id="tier" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none cursor-pointer hover:bg-slate-200 transition-all text-slate-500" onchange="document.getElementById('school').disabled = this.value === 'university'; if(this.value === 'university') document.getElementById('school').value = ''">${tierOptions}</select>
+              <label class="${swalLabel}" for="pos-tier">Level</label>
+              <select id="pos-tier" class="${swalField}">${tierOptions}</select>
             </div>
             <div>
-              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Assigned School</label>
-              <select id="school" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none cursor-pointer hover:bg-slate-200 transition-all text-slate-500">
-                <option value="">N/A (University Wide)</option>
+              <label class="${swalLabel}" for="pos-school">School</label>
+              <select id="pos-school" class="${swalField}">
+                <option value="">All schools (university-wide)</option>
                 ${schoolOptions}
               </select>
             </div>
           </div>
           <div>
-            <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Connect to Election</label>
-            <select id="election_id" class="w-full bg-slate-100 border-none rounded-xl p-4 mt-1 text-xs font-bold outline-none cursor-pointer hover:bg-slate-200 transition-all text-slate-500">${electionOptions}</select>
+            <label class="${swalLabel}" for="pos-election">Election</label>
+            <select id="pos-election" class="${swalField}">${electionOptions}</select>
           </div>
         </div>
       `,
+      width: 620,
+      focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: 'INITIALIZE POSITION',
-      confirmButtonColor: '#b91c1c',
-      cancelButtonText: 'CANCEL',
-      customClass: { popup: 'rounded-[2.5rem]', confirmButton: 'rounded-xl text-[10px] font-black tracking-widest px-8 py-4' },
-      preConfirm: () => {
-        const name = (document.getElementById("name") as HTMLInputElement).value;
-        const description = (document.getElementById("description") as HTMLInputElement).value;
-        const tier = (document.getElementById("tier") as HTMLSelectElement).value;
-        const school = (document.getElementById("school") as HTMLSelectElement).value;
-        const election_id = (document.getElementById("election_id") as HTMLSelectElement).value;
-        
-        if (!name || !description || !tier || !election_id) {
-          Swal.showValidationMessage("Validation Error: Core fields required");
-          return;
-        }
-        
-        const payload: any = { name, description, tier, election_id };
-        // Logic fix: Tier university can be applied by any school (school is null/empty)
-        if (tier === "school") {
-            if (!school) {
-                Swal.showValidationMessage("Validation Error: School tier requires a specific school assignment");
-                return;
-            }
-            payload.school = school;
-        } else {
-            payload.school = null; // University positions are open to all
-        }
-        
-        return payload;
+      confirmButtonText: opts.confirmText,
+      cancelButtonText: "Cancel",
+      didOpen: () => {
+        const tier = document.getElementById("pos-tier") as HTMLSelectElement;
+        const school = document.getElementById("pos-school") as HTMLSelectElement;
+        const sync = () => {
+          const universityWide = tier.value === "university";
+          school.disabled = universityWide;
+          if (universityWide) school.value = "";
+        };
+        tier.addEventListener("change", sync);
+        sync();
+      },
+      preConfirm: (): PositionForm | false => {
+        const get = (id: string) => (document.getElementById(id) as HTMLInputElement).value;
+        const name = get("pos-name").trim();
+        const description = get("pos-description").trim();
+        const tier = get("pos-tier");
+        const school = get("pos-school");
+        const election_id = get("pos-election");
+
+        const fail = (message: string) => {
+          Swal.showValidationMessage(message);
+          return false as const;
+        };
+
+        if (!name || !description || !tier) return fail("Fill in the name, description and level");
+        if (!election_id) return fail("Choose an election for this position");
+        // School positions need a school. University positions are open to every school.
+        if (tier === "school" && !school) return fail("A school-level position needs a school");
+
+        return { name, description, tier, school: tier === "school" ? school : null, election_id };
       },
     });
+    return value || undefined;
+  };
 
-    if (value) {
-      await createPosition(value).unwrap();
-      MySwal.fire({ title: "REGISTERED", text: "New position recorded in registry", icon: "success", confirmButtonColor: '#1e293b' });
+  /* ---------- Actions ---------- */
+  const handleAddPosition = async () => {
+    const form = await openPositionForm({ title: "Add a new position", confirmText: "Add position" });
+    if (!form) return;
+
+    try {
+      await createPosition(form).unwrap();
+      toast.success(`${form.name} was added`);
       refetchPositions();
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.data?.error || "Could not add the position");
     }
   };
 
-  const handleEditPosition = async (p: any) => {
-    const tierOptions = TIERS.map((t) => `<option value="${t}" ${t === p.tier ? "selected" : ""}>${t.toUpperCase()}</option>`).join("");
-    const schoolOptions = SCHOOLS.map((s) => `<option value="${s}" ${s === p.school ? "selected" : ""}>${(s || "").replace(/_/g, " ")}</option>`).join("");
-    const electionOptions = elections.map((e: any) => `<option value="${e.id}" ${e.id === p.election_id ? "selected" : ""}>${e.name}</option>`).join("");
+  const handleEditPosition = async (position: Position) => {
+    const form = await openPositionForm({ title: "Edit position", confirmText: "Save changes", initial: position });
+    if (!form) return;
 
-    const { value } = await MySwal.fire({
-      title: '<b class="text-slate-800 uppercase italic">Modify Record</b>',
-      html: `
-        <div class="text-left font-sans p-2">
-          <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Position Name</label>
-          <input id="name" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" value="${p.name || ""}" />
-          
-          <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Role Description</label>
-          <input id="description" class="w-full bg-slate-100 border-none rounded-xl p-4 mb-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600 transition-all" value="${p.description || ""}" />
-          
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Tier</label>
-              <select id="tier" class="w-full bg-slate-100 border-none rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600" onchange="document.getElementById('school').disabled = this.value === 'university'; if(this.value === 'university') document.getElementById('school').value = ''">${tierOptions}</select>
-            </div>
-            <div>
-              <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">School</label>
-              <select id="school" class="w-full bg-slate-100 border-none rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600" ${p.tier === 'university' ? 'disabled' : ''}>
-                <option value="">N/A (University Wide)</option>
-                ${schoolOptions}
-              </select>
-            </div>
-          </div>
-          
-          <label class="text-[9px] font-black text-[#b91c1c] uppercase ml-1 tracking-widest">Election Link</label>
-          <select id="election_id" class="w-full bg-slate-100 border-none rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-red-600">${electionOptions}</select>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'SAVE CHANGES',
-      confirmButtonColor: '#b91c1c',
-      customClass: { popup: 'rounded-[2.5rem]' },
-      preConfirm: () => {
-        const name = (document.getElementById("name") as HTMLInputElement).value;
-        const description = (document.getElementById("description") as HTMLInputElement).value;
-        const tier = (document.getElementById("tier") as HTMLSelectElement).value;
-        const school = (document.getElementById("school") as HTMLSelectElement).value;
-        const election_id = (document.getElementById("election_id") as HTMLSelectElement).value;
-        
-        const payload: any = { positionId: p.id, name, description, tier, election_id };
-        if (tier === "school") {
-            payload.school = school;
-        } else {
-            payload.school = null;
-        }
-        
-        return payload;
-      },
-    });
-
-    if (value) {
-      await updatePosition(value).unwrap();
-      MySwal.fire({ title: "UPDATED", icon: "success", confirmButtonColor: '#1e293b' });
+    try {
+      await updatePosition({ positionId: position.id, ...form }).unwrap();
+      toast.success(`${form.name} was updated`);
       refetchPositions();
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.data?.error || "Could not update the position");
     }
   };
 
-  const handleDeletePosition = async (id: string) => {
+  const handleDeletePosition = async (position: Position) => {
     const res = await MySwal.fire({
-      title: "PURGE POSITION?",
-      text: "This record will be permanently scrubbed from the Registry.",
+      ...swalBase,
       icon: "warning",
+      title: "Delete this position?",
+      text: `${position.name} will be removed for good. This cannot be undone.`,
       showCancelButton: true,
-      confirmButtonColor: '#b91c1c',
-      confirmButtonText: "YES, PURGE",
-      customClass: { popup: 'rounded-[2.5rem]' }
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Keep it",
     });
+    if (!res.isConfirmed) return;
 
-    if (res.isConfirmed) {
-      await deletePosition(id).unwrap();
+    setDeletingId(position.id);
+    try {
+      await deletePosition(position.id).unwrap();
+      toast.success(`${position.name} was deleted`);
       refetchPositions();
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.data?.error || "Could not delete the position");
+    } finally {
+      setDeletingId(null);
     }
   };
 
-  /* ================= UI RENDERING ================= */
+  /* ---------- Loading and error ---------- */
   if (isLoadingPositions || isLoadingElections) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-[#F8FAFC]">
+      <div className="flex h-screen flex-col items-center justify-center bg-slate-50">
         <PuffLoader color="#b91c1c" size={60} />
-        <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Accessing Secure Registry...</p>
+        <p className="mt-4 animate-pulse text-sm font-semibold text-slate-500">Loading positions...</p>
       </div>
     );
   }
 
-  return (
-    <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Header Section */}
-        <div className="mb-10 text-center lg:text-left flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 rounded-full mb-3 border border-red-100">
-              <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse"></span>
-              <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">Position Control</span>
-            </div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">Positions <span className="text-red-700">Registry</span></h1>
-          </div>
-
-          <div className="flex gap-2 justify-center">
-            <button 
-              onClick={handleRefresh}
-              className="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-700 transition-all shadow-sm flex items-center gap-2"
-            >
-              <FaSync className={`w-3 h-3 text-red-600 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh Link
-            </button>
-            <button onClick={() => { setSearchTerm(""); setTierFilter(""); setSchoolFilter(""); setElectionFilter(""); }}
-              className="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2"
-            >
-              <FaTimes className="w-3 h-3 text-rose-500" /> Reset Registry
-            </button>
-          </div>
-        </div>
-
-        {/* Stats Dashboard */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: "Database Entries", val: positions.length, color: "text-slate-900", b: "border-l-slate-800" },
-            { label: "Active Filter", val: filteredPositions.length, color: "text-red-600", b: "border-l-red-600" },
-            { label: "Linked Races", val: elections.length, color: "text-emerald-600", b: "border-l-emerald-600" },
-            { label: "Registry Health", val: "Optimal", color: "text-emerald-500", isText: true, b: "border-l-slate-400" }
-          ].map((stat, i) => (
-            <div key={i} className={`bg-white p-6 rounded-[1.5rem] border border-slate-200 shadow-sm border-l-4 ${stat.b}`}>
-              <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">{stat.label}</p>
-              <p className={`text-2xl font-black uppercase italic ${stat.color}`}>
-                {stat.val}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Controls Side */}
-          <div className="lg:col-span-4">
-            <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-xl shadow-slate-200/50 sticky top-8 space-y-6">
-              <button onClick={handleAddPosition}
-                className="w-full py-5 bg-[#b91c1c] text-white rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-              >
-                <FaPlus /> Initialize New Position
-              </button>
-
-              <div className="space-y-4 pt-4 border-t border-slate-100">
-                <div className="relative">
-                  <input type="text" placeholder="Search Records..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-slate-50 border-2 border-transparent focus:border-red-600 rounded-2xl p-4 pl-12 text-xs font-bold text-slate-700 outline-none transition-all" />
-                  <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                </div>
-
-                <select value={tierFilter} onChange={(e) => setTierFilter(e.target.value)} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-red-500">
-                  <option value="">Filter by Tier</option>
-                  {TIERS.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
-                </select>
-
-                <select value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-red-500">
-                  <option value="">Filter by School</option>
-                  {SCHOOLS.map(s => <option key={s} value={s}>{(s || "").replace(/_/g, " ")}</option>)}
-                </select>
-
-                <select value={electionFilter} onChange={(e) => setElectionFilter(e.target.value)} className="w-full bg-slate-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase text-slate-700 outline-none cursor-pointer focus:ring-2 focus:ring-red-500">
-                  <option value="">Linked Election Race</option>
-                  {elections.map((e: any) => <option key={e.id} value={e.id}>{e.name}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* List Side */}
-          <div className="lg:col-span-8">
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-              <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
-                   <MdBallot className="text-red-700" size={24} /> Transmission Feed
-                </h2>
-                <div className="flex items-center gap-2 text-[10px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase border border-red-100">
-                  <FaSync className={`text-[8px] ${isRefreshing ? 'animate-spin' : ''}`} /> Live Stream
-                </div>
-              </div>
-
-              <div className="divide-y divide-slate-100 max-h-[700px] overflow-y-auto custom-scrollbar">
-                {paginatedPositions.length > 0 ? (
-                  paginatedPositions.map((p: any) => (
-                    <div key={p.id} className="p-7 hover:bg-red-50/30 transition-all group relative border-l-[6px] border-transparent hover:border-red-600">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex gap-2">
-                          <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${p.tier === 'university' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-red-100 text-red-600 border-red-200'}`}>{p.tier || "N/A"}</span>
-                          <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[8px] font-black uppercase tracking-widest border border-slate-200">{p.tier === 'university' ? 'ALL SCHOOLS' : (p.school || "").replace(/_/g, " ")}</span>
-                        </div>
-                        <div className="opacity-0 group-hover:opacity-100 transition-all flex gap-4">
-                          <button onClick={() => handleEditPosition(p)} className="text-[10px] font-black text-slate-400 hover:text-red-600 uppercase tracking-tighter transition-colors flex items-center gap-1"><FaEdit /> Edit</button>
-                          <button onClick={() => handleDeletePosition(p.id)} className="text-[10px] font-black text-slate-400 hover:text-red-600 uppercase tracking-tighter transition-colors flex items-center gap-1"><FaTrash /> Purge</button>
-                        </div>
-                      </div>
-                      
-                      <h3 className="text-base font-black text-slate-900 uppercase italic mb-1 tracking-tight">{p.name || "UNIDENTIFIED RECORD"}</h3>
-                      <p className="text-xs text-slate-500 font-medium leading-relaxed mb-4">{p.description || "System generated: No metadata attached."}</p>
-                      
-                      <div className="flex items-center justify-between border-t border-slate-50 pt-5">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                           Linked Race: <span className="text-slate-800 font-black">{electionMap[p.election_id] || "DISCONNECTED"}</span>
-                        </span>
-                        <span className="text-[8px] text-slate-300 font-black tracking-widest">ID: {p.id?.slice(0,12)}</span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-24 text-center">
-                    <div className="inline-flex p-6 bg-slate-50 rounded-full mb-4">
-                        <MdBallot className="text-slate-200" size={40} />
-                    </div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-loose">No matching registry records found.<br/>Adjust parameters or refresh link.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-center items-center gap-3">
-                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}
-                    className="px-4 py-2 text-[10px] font-black uppercase text-slate-600 disabled:opacity-20 hover:text-red-600 transition-all">Prev Segment</button>
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button key={i} onClick={() => setCurrentPage(i + 1)}
-                      className={`w-10 h-10 rounded-2xl text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-red-700 text-white shadow-lg shadow-red-200 scale-110' : 'bg-white border border-slate-200 text-slate-400 hover:bg-red-50 hover:text-red-600'}`}>
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)}
-                    className="px-4 py-2 text-[10px] font-black uppercase text-slate-600 disabled:opacity-20 hover:text-red-600 transition-all">Next Segment</button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+  if (isError) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-slate-50 px-6 text-center">
+        <FaExclamationTriangle className="text-red-600" size={32} />
+        <h2 className="text-xl font-black text-slate-900">We could not load the positions</h2>
+        <p className="max-w-sm text-sm text-slate-500">Check your connection and try again.</p>
+        <button onClick={handleRefresh} className="mt-2 rounded-xl bg-red-700 px-5 py-3 text-sm font-bold text-white hover:bg-red-800">
+          Try again
+        </button>
       </div>
-    </div>
+    );
+  }
+
+  const chips = [
+    { value: "", label: "All levels", count: tierCounts.all },
+    { value: "school", label: "School", count: tierCounts.school },
+    { value: "university", label: "University", count: tierCounts.university },
+  ];
+
+  /* ---------- Render ---------- */
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
+        <motion.div variants={page} initial="hidden" animate="show" className="mx-auto max-w-6xl space-y-6">
+          {/* Header */}
+          <motion.header variants={item} className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+                <MdBallot className="text-red-700" /> Positions
+              </h1>
+              <p className="mt-1 max-w-lg text-sm text-slate-500">Add the seats people can run for, and link each one to an election.</p>
+            </div>
+            <div className="flex gap-3">
+              <motion.button
+                whileTap={{ scale: 0.94 }}
+                onClick={handleRefresh}
+                aria-label="Refresh the list"
+                title="Refresh the list"
+                className="rounded-xl border border-slate-200 bg-white p-3.5 text-slate-500 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-red-600/10"
+              >
+                <FaSync className={fetchingPositions || fetchingElections ? "animate-spin" : ""} />
+              </motion.button>
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={handleAddPosition}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-700 px-6 py-3.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-700/20"
+              >
+                <FaPlus /> Add position
+              </motion.button>
+            </div>
+          </motion.header>
+
+          {/* Numbers */}
+          <motion.div variants={item} className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 lg:grid-cols-4">
+            <StatCard label="All positions" value={positions.length} />
+            <StatCard label="Matching your filters" value={filteredPositions.length} />
+            <StatCard label="Elections" value={elections.length} />
+            <StatCard label="University-wide positions" value={positions.filter((p) => p.tier === "university").length} />
+          </motion.div>
+
+          {/* Filters */}
+          <motion.div variants={item} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="relative">
+                <label htmlFor="search" className="sr-only">Search positions</label>
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-red-700" />
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Search by name"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`${selectClass} pl-11`}
+                />
+              </div>
+              <div>
+                <label htmlFor="election-filter" className="sr-only">Election</label>
+                <select id="election-filter" value={electionFilter} onChange={(e) => setElectionFilter(e.target.value)} className={`${selectClass} cursor-pointer`}>
+                  <option value="">All elections</option>
+                  {elections.map((e) => (
+                    <option key={e.id} value={e.id}>{e.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="school-filter" className="sr-only">School</label>
+                <select id="school-filter" value={schoolFilter} onChange={(e) => setSchoolFilter(e.target.value)} className={`${selectClass} cursor-pointer`}>
+                  <option value="">All schools</option>
+                  {SCHOOLS.map((s) => (
+                    <option key={s} value={s}>{schoolLabel(s)}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {chips.map((chip) => {
+                  const active = tierFilter === chip.value;
+                  return (
+                    <button
+                      key={chip.label}
+                      onClick={() => setTierFilter(chip.value)}
+                      aria-pressed={active}
+                      className={`rounded-full border px-3.5 py-1.5 text-sm font-bold transition ${
+                        active ? "border-red-700 bg-red-700 text-white" : "border-slate-200 bg-white text-slate-600 hover:border-red-300 hover:text-red-700"
+                      }`}
+                    >
+                      {chip.label} <span className={active ? "text-red-100" : "text-slate-400"}>{chip.count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <AnimatePresence>
+                {hasFilters && (
+                  <motion.button
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    onClick={clearFilters}
+                    className="text-sm font-bold text-red-700 hover:underline"
+                  >
+                    Clear filters
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* List */}
+          <motion.div variants={item} className="space-y-4">
+            <p className="text-sm text-slate-500">
+              {filteredPositions.length.toLocaleString()} {filteredPositions.length === 1 ? "position" : "positions"}
+              {hasFilters ? " match your filters" : ""}
+            </p>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <AnimatePresence initial={false}>
+                {pageItems.map((p, i) => (
+                  <PositionCard
+                    key={p.id}
+                    position={p}
+                    electionName={electionMap[p.election_id]}
+                    index={i}
+                    deleting={deletingId === p.id}
+                    onEdit={handleEditPosition}
+                    onDelete={handleDeletePosition}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {pageItems.length === 0 && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+                <MdBallot className="mx-auto mb-4 text-slate-200" size={52} />
+                <p className="text-sm font-bold text-slate-700">{hasFilters ? "No positions match your filters" : "There are no positions yet"}</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  {hasFilters ? "Try a different search or clear the filters." : "Select “Add position” to create the first one."}
+                </p>
+              </motion.div>
+            )}
+
+            {totalPages > 1 && <Pagination page={safePage} totalPages={totalPages} onChange={setCurrentPage} />}
+          </motion.div>
+        </motion.div>
+      </div>
+    </MotionConfig>
   );
 };

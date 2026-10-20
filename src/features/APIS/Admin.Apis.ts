@@ -35,7 +35,8 @@ export interface DisputeVerificationResult {
 export const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://online-voting-system-r2za.onrender.com/api/",
+    // Uses Vite's environment variable, falls back to your custom domain if undefined
+    baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/`,
     prepareHeaders: (headers, { getState }) => {
       let token = (getState() as any).auth.token;
 
@@ -72,14 +73,12 @@ export const adminApi = createApi({
     }),
 
     // Cross-references DB with Blockchain (Sepolia)
-    // Now perfectly aligned with your JSON examples
     verifyDispute: builder.query<DisputeVerificationResult, { regNo: string; electionId: string; positionId: string }>({
       query: (params) => ({
         url: 'votes/verify-dispute',
         method: 'GET',
         params,
       }),
-      // Keeps the full structure: { verified, integrityMatch, message, details, status }
       providesTags: ["Dispute"],
     }),
   }),

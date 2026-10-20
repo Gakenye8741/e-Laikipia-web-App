@@ -69,8 +69,7 @@ export interface ExecutiveResultsResponse {
 export const delegatesApi = createApi({
   reducerPath: "delegatesApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://online-voting-system-r2za.onrender.com/api/delegates",
-    prepareHeaders: (headers) => {
+  baseUrl: `${import.meta.env.VITE_API_URL || "https://voting-api.gakenye-ndiritu.co.ke"}/api/delegates`,    prepareHeaders: (headers) => {
       // WEB UPDATE: Use synchronous localStorage for the Bearer token
       const token = localStorage.getItem("token");
       if (token) {
