@@ -11,6 +11,7 @@ import {
   useMotionValue, useTransform, type Variants,
 } from "framer-motion";
 import { Navbar } from "../components/Navbar";
+import Seo, { PAGES } from "../components/Seo";
 
 /* ----------------------------- Content ----------------------------- */
 
@@ -216,6 +217,7 @@ const ProjectCard = ({ project }: { project: (typeof projects)[number] }) => (
 
 const DeveloperPage = () => (
   <MotionConfig reducedMotion="user">
+     <Seo {...PAGES.developer} />
     <div className="min-h-screen overflow-x-hidden bg-slate-50 font-sans text-slate-800 selection:bg-red-600 selection:text-white">
       <ScrollBar />
       <Navbar />

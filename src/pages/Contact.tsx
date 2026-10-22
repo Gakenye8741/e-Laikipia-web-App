@@ -7,6 +7,7 @@ import {
 } from "framer-motion";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
+import Seo, { PAGES } from "../components/Seo";
 
 /* --------------------------- Animations ---------------------------- */
 
@@ -131,6 +132,7 @@ const ContactPage = () => {
 
   return (
     <MotionConfig reducedMotion="user">
+       <Seo {...PAGES.contact} />
       <div className="flex min-h-screen flex-col justify-between overflow-x-hidden bg-slate-50 font-sans text-slate-800 selection:bg-red-600 selection:text-white">
         <ScrollBar />
         <div>

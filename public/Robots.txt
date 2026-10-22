@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /api/
+
+Sitemap: https://securevote.gakenye-ndiritu.co.ke/sitemap.xml

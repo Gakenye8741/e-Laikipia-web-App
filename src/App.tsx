@@ -51,9 +51,7 @@ function App() {
         { path: '/about', element: <AboutPage /> },
         { path: '/login', element: <Login /> },
         { path: '/contact', element: <ContactForm /> },
-        // { path: "/email-verification", element: <EmailVerification />, errorElement: <Error /> },
-        // { path: "/forgot-password",element: <ForgotPassword />,errorElement: <Error /> },
-        // { path: "/reset-password/:token",element: <ResetPassword />,errorElement: <Error />},
+        
         { path: "/developer" , element: <DeveloperPage />,errorElement: <Error />},
         { path: "/results" , element: <ResultsScreen />,errorElement: <Error />},
         { path: "/download" ,element: <SecureVoteDownload/>, errorElement : <Error/>}

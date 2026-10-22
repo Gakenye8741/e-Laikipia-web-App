@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from "react";
 import { BarChart3, CheckCircle, Lock, ShieldCheck, ChevronDown } from "lucide-react";
 import { MdVerifiedUser, MdHistoryEdu, MdWorkspacePremium } from "react-icons/md";
 import { Navbar } from "../components/Navbar";
-
+import Seo, { PAGES } from '../components/Seo'
 /* ----------------------------- TYPES ----------------------------- */
 
 interface Stat {
@@ -296,6 +296,7 @@ const FeatureItem = ({
 /* ------------------------------ PAGE ------------------------------ */
 
 const AboutPage = () => {
+ 
   const [openIndex, setOpenIndex] = useState<number>(0);
 
   return (
@@ -303,6 +304,7 @@ const AboutPage = () => {
       <Styles />
       <ScrollBar />
 
+ <Seo {...PAGES.about} />
       {/* Soft moving shapes in the background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="blob-a absolute -top-24 -right-24 h-96 w-96 rounded-full bg-red-200/50 blur-3xl" />

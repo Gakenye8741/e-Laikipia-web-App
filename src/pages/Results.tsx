@@ -24,6 +24,7 @@ import { useGetDelegateRosterQuery, useGetExecutiveResultsQuery } from '../featu
 import { Navbar } from '../components/Navbar';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../App/store';
+import Seo, { PAGES } from '../components/Seo';
 
 // THEME CONSTANTS
 const UNIVERSITY_RED = '#c8102e';
@@ -197,6 +198,7 @@ const { data: rosterResponse, isLoading: loadingRoster, isError: rosterError } =
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-20">
+       <Seo {...PAGES.results} />
       <Navbar />
       <div className="pt-28 max-w-6xl mx-auto px-4 lg:px-8">
 

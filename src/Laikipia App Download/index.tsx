@@ -8,6 +8,7 @@ import {
   useMotionValue, useTransform, type Variants,
 } from 'framer-motion';
 import { Navbar } from '../components/Navbar';
+import Seo, { PAGES } from '../components/Seo';
 
 /* ----------------------------- Content ----------------------------- */
 
@@ -204,6 +205,7 @@ export const SecureVoteDownload: React.FC = () => {
 
   return (
     <MotionConfig reducedMotion="user">
+       <Seo {...PAGES.download} />
       <div className="min-h-screen overflow-x-hidden bg-white font-sans text-slate-800 selection:bg-red-600 selection:text-white">
         <ScrollBar />
         <Navbar />

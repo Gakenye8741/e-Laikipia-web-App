@@ -10,6 +10,9 @@ import { Eye, EyeOff, User, Lock } from 'lucide-react';
 import { authApi } from '../features/APIS/Auth.Api';
 import { motion, AnimatePresence, MotionConfig, type Variants } from 'framer-motion';
 
+// 👇 1. Import Seo and PAGES from your Seo component
+import Seo, { PAGES } from '../components/Seo';
+
 interface LoginDetails {
   reg_no: string;
   password: string;
@@ -82,6 +85,9 @@ const Login = () => {
 
   return (
     <MotionConfig reducedMotion="user">
+      {/* 👇 2. Render the <Seo /> component at the top of your JSX */}
+      <Seo {...PAGES.login} />
+
       <div className="min-h-screen bg-slate-100 font-sans">
         <Toaster richColors position="top-right" />
         <Navbar />
@@ -98,8 +104,8 @@ const Login = () => {
               backgroundImage: `url(${loginImage})`,
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              backgroundSize: '85%', // Fills up the container maximum space safely without clipping edges
-              backgroundColor: '#ffffff' // Keeps background matching the image canvas
+              backgroundSize: '85%',
+              backgroundColor: '#ffffff'
             }}
           >
             {/* Soft glowing blobs that drift around */}
@@ -210,7 +216,6 @@ const Login = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#D32F2F] transition-colors"
                       >
-                        {/* Eye icon flips when you toggle it */}
                         <AnimatePresence mode="wait" initial={false}>
                           <motion.span
                             key={showPassword ? 'hide' : 'show'}
@@ -247,7 +252,6 @@ const Login = () => {
                       whileTap={isLoading ? undefined : { scale: 0.96 }}
                       className="relative overflow-hidden w-full bg-[#D32F2F] hover:bg-black text-white font-black py-4 rounded-2xl shadow-xl shadow-red-100 transition-colors disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-[0.1em] text-sm mt-2"
                     >
-                      {/* Light streak that sweeps across the button */}
                       {!isLoading && (
                         <motion.span
                           aria-hidden
@@ -275,7 +279,6 @@ const Login = () => {
                 </form>
 
                 <motion.footer variants={rise} className="mt-8 pt-6 border-t border-slate-50 text-center">
-                 
                 </motion.footer>
               </motion.div>
             </motion.div>
